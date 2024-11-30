@@ -6,6 +6,7 @@ export class PuzzlePiece {
   color: string;
   group: PuzzlePiece[] | null;
   number: number;
+  zIndex: number;
 
   constructor(
     x: number,
@@ -22,6 +23,7 @@ export class PuzzlePiece {
     this.color = color;
     this.group = null;
     this.number = number;
+    this.zIndex = number; // 初始化 zIndex
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -37,6 +39,17 @@ export class PuzzlePiece {
       this.number.toString(),
       this.x + this.width / 2,
       this.y + this.height / 2,
+    );
+
+    // 显示 zIndex 数字在右下角
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(
+      this.zIndex.toString(),
+      this.x + this.width - 5,
+      this.y + this.height - 5,
     );
   }
 

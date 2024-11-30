@@ -27,7 +27,9 @@ export default function PuzzleGame() {
         if (canvas) {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-        pieces.forEach((piece) => piece.draw(ctx));
+        // 根据 zIndex 排序拼图片
+        const sortedPieces = [...pieces].sort((a, b) => a.zIndex - b.zIndex);
+        sortedPieces.forEach((piece) => piece.draw(ctx));
       }
       requestAnimationFrame(draw);
     }

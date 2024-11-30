@@ -164,8 +164,20 @@ export function usePuzzleGameLogic() {
         setSelectedPiece(pieces[i]);
         setDragOffset({ x: mouseX - pieces[i].x, y: mouseY - pieces[i].y });
         setDragging(true);
+
+        // 将选中拼图移动到数组末尾并重新分配 zIndex
         const newPieces = [...pieces];
-        newPieces.push(newPieces.splice(i, 1)[0]);
+        const selected = newPieces.splice(i, 1)[0];
+        newPieces.push(selected);
+
+        newPieces.forEach((piece, index) => {
+          if (piece.group) {
+            piece.group.forEach((p) => (p.zIndex = index + 1));
+          } else {
+            piece.zIndex = index + 1;
+          }
+        });
+
         setPieces(newPieces);
         break;
       }
