@@ -56,88 +56,98 @@ export function usePuzzleGameLogic() {
   }, []);
 
   function checkSnapping(movedPiece: PuzzlePiece) {
-    pieces.forEach((piece) => {
-      if (piece === movedPiece) return;
+    const piecesToCheck = movedPiece.group ? movedPiece.group : [movedPiece];
 
-      const numberDifference = Math.abs(movedPiece.number - piece.number);
+    piecesToCheck.forEach((piece) => {
+      pieces.forEach((otherPiece) => {
+        if (otherPiece === piece) return;
 
-      // 垂直吸附
-      if (
-        Math.abs(movedPiece.y - (piece.y + piece.height)) < SNAP_DISTANCE &&
-        numberDifference === columns
-      ) {
-        if (areAlignedHorizontally(movedPiece, piece)) {
-          const offsetY = piece.y + piece.height;
-          if (movedPiece.group) {
-            adjustGroupPosition(movedPiece.group, 0, offsetY - movedPiece.y);
-          } else {
-            movedPiece.y = offsetY;
+        const numberDifference = Math.abs(piece.number - otherPiece.number);
+
+        // 垂直吸附
+        if (
+          Math.abs(piece.y - (otherPiece.y + otherPiece.height)) <
+            SNAP_DISTANCE &&
+          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE && // 添加水平距离检查
+          numberDifference === columns
+        ) {
+          if (areAlignedHorizontally(piece, otherPiece)) {
+            const offsetY = otherPiece.y + otherPiece.height;
+            if (piece.group) {
+              adjustGroupPosition(piece.group, 0, offsetY - piece.y);
+            } else {
+              piece.y = offsetY;
+            }
+            alignHorizontally(piece, otherPiece);
+            mergeGroups(piece, otherPiece);
           }
-          alignHorizontally(movedPiece, piece);
-          mergeGroups(movedPiece, piece);
         }
-      }
 
-      if (
-        Math.abs(movedPiece.y + movedPiece.height - piece.y) < SNAP_DISTANCE &&
-        numberDifference === columns
-      ) {
-        if (areAlignedHorizontally(movedPiece, piece)) {
-          const offsetY = piece.y - movedPiece.height;
-          if (movedPiece.group) {
-            adjustGroupPosition(movedPiece.group, 0, offsetY - movedPiece.y);
-          } else {
-            movedPiece.y = offsetY;
+        if (
+          Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
+          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE && // 添加水平距离检查
+          numberDifference === columns
+        ) {
+          if (areAlignedHorizontally(piece, otherPiece)) {
+            const offsetY = otherPiece.y - piece.height;
+            if (piece.group) {
+              adjustGroupPosition(piece.group, 0, offsetY - piece.y);
+            } else {
+              piece.y = offsetY;
+            }
+            alignHorizontally(piece, otherPiece);
+            mergeGroups(piece, otherPiece);
           }
-          alignHorizontally(movedPiece, piece);
-          mergeGroups(movedPiece, piece);
         }
-      }
 
-      // 水平吸附
-      if (
-        Math.abs(movedPiece.x - (piece.x + piece.width)) < SNAP_DISTANCE &&
-        movedPiece.number === piece.number + 1 &&
-        !(
-          (rightSidePieces.includes(piece.number) &&
-            leftSidePieces.includes(movedPiece.number)) ||
-          (rightSidePieces.includes(movedPiece.number) &&
-            leftSidePieces.includes(piece.number))
-        )
-      ) {
-        if (areAlignedVertically(movedPiece, piece)) {
-          const offsetX = piece.x + piece.width;
-          if (movedPiece.group) {
-            adjustGroupPosition(movedPiece.group, offsetX - movedPiece.x, 0);
-          } else {
-            movedPiece.x = offsetX;
+        // 水平吸附
+        if (
+          Math.abs(piece.x - (otherPiece.x + otherPiece.width)) <
+            SNAP_DISTANCE &&
+          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE && // 添加垂直距离检查
+          piece.number === otherPiece.number + 1 &&
+          !(
+            (rightSidePieces.includes(otherPiece.number) &&
+              leftSidePieces.includes(piece.number)) ||
+            (rightSidePieces.includes(piece.number) &&
+              leftSidePieces.includes(otherPiece.number))
+          )
+        ) {
+          if (areAlignedVertically(piece, otherPiece)) {
+            const offsetX = otherPiece.x + otherPiece.width;
+            if (piece.group) {
+              adjustGroupPosition(piece.group, offsetX - piece.x, 0);
+            } else {
+              piece.x = offsetX;
+            }
+            alignVertically(piece, otherPiece);
+            mergeGroups(piece, otherPiece);
           }
-          alignVertically(movedPiece, piece);
-          mergeGroups(movedPiece, piece);
         }
-      }
 
-      if (
-        Math.abs(movedPiece.x + movedPiece.width - piece.x) < SNAP_DISTANCE &&
-        movedPiece.number === piece.number - 1 &&
-        !(
-          (rightSidePieces.includes(piece.number) &&
-            leftSidePieces.includes(movedPiece.number)) ||
-          (rightSidePieces.includes(movedPiece.number) &&
-            leftSidePieces.includes(piece.number))
-        )
-      ) {
-        if (areAlignedVertically(movedPiece, piece)) {
-          const offsetX = piece.x - movedPiece.width;
-          if (movedPiece.group) {
-            adjustGroupPosition(movedPiece.group, offsetX - movedPiece.x, 0);
-          } else {
-            movedPiece.x = offsetX;
+        if (
+          Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
+          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE && // 添加垂直距离检查
+          piece.number === otherPiece.number - 1 &&
+          !(
+            (rightSidePieces.includes(otherPiece.number) &&
+              leftSidePieces.includes(piece.number)) ||
+            (rightSidePieces.includes(piece.number) &&
+              leftSidePieces.includes(otherPiece.number))
+          )
+        ) {
+          if (areAlignedVertically(piece, otherPiece)) {
+            const offsetX = otherPiece.x - piece.width;
+            if (piece.group) {
+              adjustGroupPosition(piece.group, offsetX - piece.x, 0);
+            } else {
+              piece.x = offsetX;
+            }
+            alignVertically(piece, otherPiece);
+            mergeGroups(piece, otherPiece);
           }
-          alignVertically(movedPiece, piece);
-          mergeGroups(movedPiece, piece);
         }
-      }
+      });
     });
   }
 
