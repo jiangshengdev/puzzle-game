@@ -144,23 +144,29 @@ export default function PuzzleGame() {
   const [selectedPiece, setSelectedPiece] = useState<PuzzlePiece | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  const columns = 4; // 将columns移到组件顶部
+  const rows = 3;
+  const columns = 4;
+  const totalPieces = rows * columns;
 
   useEffect(() => {
-    const initialPieces = [
-      new PuzzlePiece(50, 50, 100, 100, "red", 1),
-      new PuzzlePiece(200, 50, 100, 100, "green", 2),
-      new PuzzlePiece(350, 50, 100, 100, "blue", 3),
-      new PuzzlePiece(500, 50, 100, 100, "yellow", 4),
-      new PuzzlePiece(50, 200, 100, 100, "purple", 5),
-      new PuzzlePiece(200, 200, 100, 100, "orange", 6),
-      new PuzzlePiece(350, 200, 100, 100, "pink", 7),
-      new PuzzlePiece(500, 200, 100, 100, "cyan", 8),
-      new PuzzlePiece(50, 350, 100, 100, "lime", 9),
-      new PuzzlePiece(200, 350, 100, 100, "teal", 10),
-      new PuzzlePiece(350, 350, 100, 100, "magenta", 11),
-      new PuzzlePiece(500, 350, 100, 100, "brown", 12),
-    ];
+    const initialPieces: PuzzlePiece[] = [];
+    let index = 0;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < columns; col++) {
+        const number = row * columns + col + 1;
+        initialPieces.push(
+          new PuzzlePiece(
+            50 + col * 150,
+            50 + row * 150,
+            100,
+            100,
+            `hsl(${(360 / totalPieces) * index}, 50%, 50%)`,
+            number,
+          ),
+        );
+        index += 1;
+      }
+    }
 
     const lefts = initialPieces
       .filter((piece) => (piece.number - 1) % columns === 0)
