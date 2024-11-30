@@ -21,20 +21,24 @@ export function usePuzzleGameLogic() {
   const rows = 3;
   const columns = 4;
   const totalPieces = rows * columns;
-
   useEffect(() => {
     const initialPieces: PuzzlePiece[] = [];
     let index = 0;
+    const canvasWidth = 800;
+    const canvasHeight = 600;
+    const spacingX = canvasWidth / (columns + 1);
+    const spacingY = canvasHeight / (rows + 1);
+
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < columns; col++) {
         const number = row * columns + col + 1;
         initialPieces.push(
           new PuzzlePiece(
-            50 + col * 150,
-            50 + row * 150,
+            spacingX * (col + 1) - 50,
+            spacingY * (row + 1) - 50,
             100,
             100,
-            `hsl(${(360 / totalPieces) * index}, 50%, 50%)`,
+            `hsl(${(360 / totalPieces) * index}, 30%, 50%)`,
             number,
           ),
         );
@@ -64,11 +68,10 @@ export function usePuzzleGameLogic() {
 
         const numberDifference = Math.abs(piece.number - otherPiece.number);
 
-        // 垂直吸附
         if (
           Math.abs(piece.y - (otherPiece.y + otherPiece.height)) <
             SNAP_DISTANCE &&
-          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE && // 添加水平距离检查
+          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
           numberDifference === columns
         ) {
           if (areAlignedHorizontally(piece, otherPiece)) {
@@ -85,7 +88,7 @@ export function usePuzzleGameLogic() {
 
         if (
           Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
-          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE && // 添加水平距离检查
+          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
           numberDifference === columns
         ) {
           if (areAlignedHorizontally(piece, otherPiece)) {
@@ -100,11 +103,10 @@ export function usePuzzleGameLogic() {
           }
         }
 
-        // 水平吸附
         if (
           Math.abs(piece.x - (otherPiece.x + otherPiece.width)) <
             SNAP_DISTANCE &&
-          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE && // 添加垂直距离检查
+          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
           piece.number === otherPiece.number + 1 &&
           !(
             (rightSidePieces.includes(otherPiece.number) &&
@@ -127,7 +129,7 @@ export function usePuzzleGameLogic() {
 
         if (
           Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
-          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE && // 添加垂直距离检查
+          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
           piece.number === otherPiece.number - 1 &&
           !(
             (rightSidePieces.includes(otherPiece.number) &&
@@ -199,7 +201,6 @@ export function usePuzzleGameLogic() {
 
   function handleMouseUp() {
     if (dragging && selectedPiece) {
-      // 执行吸附检测
       checkSnapping(selectedPiece);
 
       if (selectedPiece.group) {

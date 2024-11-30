@@ -29,8 +29,8 @@ export class PuzzlePiece {
     ctx.fillRect(this.x, this.y, this.width, this.height);
     ctx.strokeStyle = "black";
     ctx.strokeRect(this.x, this.y, this.width, this.height);
-    ctx.fillStyle = "black";
-    ctx.font = "20px Arial";
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(
