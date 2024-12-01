@@ -3,34 +3,62 @@ export class PuzzlePiece {
   y: number;
   width: number;
   height: number;
-  color: string;
   group: PuzzlePiece[] | null;
   number: number;
   zIndex: number;
+  image: HTMLImageElement | null;
+  sx: number;
+  sy: number;
+  sWidth: number;
+  sHeight: number;
 
   constructor(
     x: number,
     y: number,
     width: number,
     height: number,
-    color: string,
     number: number,
+    image: HTMLImageElement | null,
+    sx: number,
+    sy: number,
+    sWidth: number,
+    sHeight: number,
   ) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    this.color = color;
     this.group = null;
     this.number = number;
     this.zIndex = number; // 初始化 zIndex
+    this.image = image;
+    this.sx = sx;
+    this.sy = sy;
+    this.sWidth = sWidth;
+    this.sHeight = sHeight;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-    ctx.strokeStyle = "black";
-    ctx.strokeRect(this.x, this.y, this.width, this.height);
+    if (this.image) {
+      ctx.drawImage(
+        this.image,
+        this.sx,
+        this.sy,
+        this.sWidth,
+        this.sHeight,
+        this.x,
+        this.y,
+        this.width,
+        this.height,
+      );
+    } else {
+      ctx.fillStyle = "gray";
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.strokeStyle = "black";
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+    }
+
+    // 绘制数字
     ctx.fillStyle = "white";
     ctx.font = "30px Arial";
     ctx.textAlign = "center";

@@ -1,12 +1,24 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { usePuzzleGameLogic } from "./usePuzzleGameLogic";
+import { InputFile } from "@/components/ui/input-file";
 
 export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
   const { pieces, handleMouseDown, handleMouseMove, handleMouseUp } =
-    usePuzzleGameLogic();
+    usePuzzleGameLogic(image);
+
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files && e.target.files[0]) {
+      const img = new Image();
+      img.onload = () => {
+        setImage(img);
+      };
+      img.src = URL.createObjectURL(e.target.files[0]);
+    }
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,13 +50,16 @@ export default function PuzzleGame() {
   }, [pieces]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{ width: "800px", height: "600px", userSelect: "none" }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-    />
+    <div>
+      <InputFile onChange={handleImageUpload} />
+      <canvas
+        ref={canvasRef}
+        style={{ width: "800px", height: "600px", userSelect: "none" }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      />
+    </div>
   );
 }

@@ -10,7 +10,7 @@ import {
   SNAP_DISTANCE,
 } from "./utils";
 
-export function usePuzzleGameLogic() {
+export function usePuzzleGameLogic(image: HTMLImageElement | null) {
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
   const [leftSidePieces, setLeftSidePieces] = useState<number[]>([]);
   const [rightSidePieces, setRightSidePieces] = useState<number[]>([]);
@@ -18,31 +18,45 @@ export function usePuzzleGameLogic() {
   const [selectedPiece, setSelectedPiece] = useState<PuzzlePiece | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  const rows = 3;
-  const columns = 4;
-  const totalPieces = rows * columns;
+  const rows = 4;
+  const columns = 6;
   useEffect(() => {
+    if (!image) return; // 等待图片加载
+
     const initialPieces: PuzzlePiece[] = [];
-    let index = 0;
     const canvasWidth = 800;
     const canvasHeight = 600;
     const spacingX = canvasWidth / (columns + 1);
     const spacingY = canvasHeight / (rows + 1);
 
+    // 计算图片中心部分的起始坐标和尺寸
+    const centerX = image.width / 2;
+    const centerY = image.height / 2;
+    const cropWidth = image.width * 0.8; // 截取80%的宽度
+    const cropHeight = image.height * 0.8; // 截取80%的高度
+    const startX = centerX - cropWidth / 2;
+    const startY = centerY - cropHeight / 2;
+
+    const pieceWidth = cropWidth / columns;
+    const pieceHeight = cropHeight / rows;
+
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < columns; col++) {
         const number = row * columns + col + 1;
-        initialPieces.push(
-          new PuzzlePiece(
-            spacingX * (col + 1) - 50,
-            spacingY * (row + 1) - 50,
-            100,
-            100,
-            `hsl(${(360 / totalPieces) * index}, 30%, 50%)`,
-            number,
-          ),
+
+        const piece = new PuzzlePiece(
+          spacingX * (col + 1) - 50,
+          spacingY * (row + 1) - 50,
+          100,
+          100,
+          number,
+          image,
+          startX + col * pieceWidth,
+          startY + row * pieceHeight,
+          pieceWidth,
+          pieceHeight,
         );
-        index += 1;
+        initialPieces.push(piece);
       }
     }
 
@@ -57,7 +71,7 @@ export function usePuzzleGameLogic() {
     setLeftSidePieces(lefts);
     setRightSidePieces(rights);
     setPieces(initialPieces);
-  }, []);
+  }, [image]);
 
   function checkSnapping(movedPiece: PuzzlePiece) {
     const piecesToCheck = movedPiece.group ? movedPiece.group : [movedPiece];
