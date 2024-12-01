@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { PuzzlePiece } from "./PuzzlePiece";
 import {
   adjustGroupPosition,
@@ -9,9 +9,6 @@ import {
   mergeGroups,
   SNAP_DISTANCE,
 } from "./utils";
-
-// 定义凸出方向类型
-type Protrusion = "in" | "out" | "flat";
 
 export function usePuzzleGameLogic(image: HTMLImageElement | null) {
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
@@ -57,40 +54,6 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     const pieceWidth = cropWidth / columns;
     const pieceHeight = cropHeight / rows;
 
-    // 生成水平边缘数组，确保上下拼图边缘互补
-    const horizontalEdges: Protrusion[][] = [];
-    for (let row = 0; row <= rows; row++) {
-      horizontalEdges[row] = [];
-      for (let col = 0; col < columns; col++) {
-        if (row === 0 || row === rows) {
-          horizontalEdges[row][col] = "flat"; // 顶部和底部边缘为平的
-        } else if (row === 1) {
-          horizontalEdges[row][col] = randomInOut();
-        } else {
-          horizontalEdges[row][col] = invertProtrusion(
-            horizontalEdges[row - 1][col],
-          );
-        }
-      }
-    }
-
-    // 生成垂直边缘数组，确保左右拼图边缘互补
-    const verticalEdges: Protrusion[][] = [];
-    for (let row = 0; row < rows; row++) {
-      verticalEdges[row] = [];
-      for (let col = 0; col <= columns; col++) {
-        if (col === 0 || col === columns) {
-          verticalEdges[row][col] = "flat"; // 左侧和右侧边缘为平的
-        } else if (col === 1) {
-          verticalEdges[row][col] = randomInOut();
-        } else {
-          verticalEdges[row][col] = invertProtrusion(
-            verticalEdges[row][col - 1],
-          );
-        }
-      }
-    }
-
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < columns; col++) {
         const number = row * columns + col + 1;
@@ -107,15 +70,6 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           pieceWidth,
           pieceHeight,
         );
-
-        // 获取拼图块的边缘凸出方向
-        const top = horizontalEdges[row][col];
-        const bottom = horizontalEdges[row + 1][col];
-        const left = verticalEdges[row][col];
-        const right = verticalEdges[row][col + 1];
-
-        piece.edges = { top, right, bottom, left };
-
         initialPieces.push(piece);
       }
     }
@@ -133,113 +87,99 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     setPieces(initialPieces);
   }, [image]);
 
-  function invertProtrusion(protrusion: Protrusion): Protrusion {
-    if (protrusion === "in") return "out";
-    if (protrusion === "out") return "in";
-    return "flat";
-  }
+  function checkSnapping(movedPiece: PuzzlePiece) {
+    const piecesToCheck = movedPiece.group ? movedPiece.group : [movedPiece];
 
-  // 添加随机生成凸凹的函数
-  function randomInOut(): Protrusion {
-    return Math.random() > 0.5 ? "in" : "out";
-  }
+    piecesToCheck.forEach((piece) => {
+      pieces.forEach((otherPiece) => {
+        if (otherPiece === piece) return;
 
-  const checkSnapping = useCallback(
-    (movedPiece: PuzzlePiece) => {
-      const piecesToCheck = movedPiece.group ? movedPiece.group : [movedPiece];
+        const numberDifference = Math.abs(piece.number - otherPiece.number);
 
-      piecesToCheck.forEach((piece) => {
-        pieces.forEach((otherPiece) => {
-          if (otherPiece === piece) return;
-
-          const numberDifference = Math.abs(piece.number - otherPiece.number);
-
-          if (
-            Math.abs(piece.y - (otherPiece.y + otherPiece.height)) <
-              SNAP_DISTANCE &&
-            Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-            numberDifference === columns
-          ) {
-            if (areAlignedHorizontally(piece, otherPiece)) {
-              const offsetY = otherPiece.y + otherPiece.height;
-              if (piece.group) {
-                adjustGroupPosition(piece.group, 0, offsetY - piece.y);
-              } else {
-                piece.y = offsetY;
-              }
-              alignHorizontally(piece, otherPiece);
-              mergeGroups(piece, otherPiece);
+        if (
+          Math.abs(piece.y - (otherPiece.y + otherPiece.height)) <
+            SNAP_DISTANCE &&
+          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
+          numberDifference === columns
+        ) {
+          if (areAlignedHorizontally(piece, otherPiece)) {
+            const offsetY = otherPiece.y + otherPiece.height;
+            if (piece.group) {
+              adjustGroupPosition(piece.group, 0, offsetY - piece.y);
+            } else {
+              piece.y = offsetY;
             }
+            alignHorizontally(piece, otherPiece);
+            mergeGroups(piece, otherPiece);
           }
+        }
 
-          if (
-            Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
-            Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-            numberDifference === columns
-          ) {
-            if (areAlignedHorizontally(piece, otherPiece)) {
-              const offsetY = otherPiece.y - piece.height;
-              if (piece.group) {
-                adjustGroupPosition(piece.group, 0, offsetY - piece.y);
-              } else {
-                piece.y = offsetY;
-              }
-              alignHorizontally(piece, otherPiece);
-              mergeGroups(piece, otherPiece);
+        if (
+          Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
+          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
+          numberDifference === columns
+        ) {
+          if (areAlignedHorizontally(piece, otherPiece)) {
+            const offsetY = otherPiece.y - piece.height;
+            if (piece.group) {
+              adjustGroupPosition(piece.group, 0, offsetY - piece.y);
+            } else {
+              piece.y = offsetY;
             }
+            alignHorizontally(piece, otherPiece);
+            mergeGroups(piece, otherPiece);
           }
+        }
 
-          if (
-            Math.abs(piece.x - (otherPiece.x + otherPiece.width)) <
-              SNAP_DISTANCE &&
-            Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
-            piece.number === otherPiece.number + 1 &&
-            !(
-              (rightSidePieces.includes(otherPiece.number) &&
-                leftSidePieces.includes(piece.number)) ||
-              (rightSidePieces.includes(piece.number) &&
-                leftSidePieces.includes(otherPiece.number))
-            )
-          ) {
-            if (areAlignedVertically(piece, otherPiece)) {
-              const offsetX = otherPiece.x + otherPiece.width;
-              if (piece.group) {
-                adjustGroupPosition(piece.group, offsetX - piece.x, 0);
-              } else {
-                piece.x = offsetX;
-              }
-              alignVertically(piece, otherPiece);
-              mergeGroups(piece, otherPiece);
+        if (
+          Math.abs(piece.x - (otherPiece.x + otherPiece.width)) <
+            SNAP_DISTANCE &&
+          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
+          piece.number === otherPiece.number + 1 &&
+          !(
+            (rightSidePieces.includes(otherPiece.number) &&
+              leftSidePieces.includes(piece.number)) ||
+            (rightSidePieces.includes(piece.number) &&
+              leftSidePieces.includes(otherPiece.number))
+          )
+        ) {
+          if (areAlignedVertically(piece, otherPiece)) {
+            const offsetX = otherPiece.x + otherPiece.width;
+            if (piece.group) {
+              adjustGroupPosition(piece.group, offsetX - piece.x, 0);
+            } else {
+              piece.x = offsetX;
             }
+            alignVertically(piece, otherPiece);
+            mergeGroups(piece, otherPiece);
           }
+        }
 
-          if (
-            Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
-            Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
-            piece.number === otherPiece.number - 1 &&
-            !(
-              (rightSidePieces.includes(otherPiece.number) &&
-                leftSidePieces.includes(piece.number)) ||
-              (rightSidePieces.includes(piece.number) &&
-                leftSidePieces.includes(otherPiece.number))
-            )
-          ) {
-            if (areAlignedVertically(piece, otherPiece)) {
-              const offsetX = otherPiece.x - piece.width;
-              if (piece.group) {
-                adjustGroupPosition(piece.group, offsetX - piece.x, 0);
-              } else {
-                piece.x = offsetX;
-              }
-              alignVertically(piece, otherPiece);
-              mergeGroups(piece, otherPiece);
+        if (
+          Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
+          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
+          piece.number === otherPiece.number - 1 &&
+          !(
+            (rightSidePieces.includes(otherPiece.number) &&
+              leftSidePieces.includes(piece.number)) ||
+            (rightSidePieces.includes(piece.number) &&
+              leftSidePieces.includes(otherPiece.number))
+          )
+        ) {
+          if (areAlignedVertically(piece, otherPiece)) {
+            const offsetX = otherPiece.x - piece.width;
+            if (piece.group) {
+              adjustGroupPosition(piece.group, offsetX - piece.x, 0);
+            } else {
+              piece.x = offsetX;
             }
+            alignVertically(piece, otherPiece);
+            mergeGroups(piece, otherPiece);
           }
-        });
+        }
       });
-    },
-    [pieces, leftSidePieces, rightSidePieces],
-  );
+    });
+  }
 
   function handleMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
     const canvas = e.currentTarget;
