@@ -32,8 +32,22 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     // 计算图片中心部分的起始坐标和尺寸
     const centerX = image.width / 2;
     const centerY = image.height / 2;
-    const cropWidth = image.width * 0.8; // 截取80%的宽度
-    const cropHeight = image.height * 0.8; // 截取80%的高度
+
+    // 根据行数和列数的比例截取图片
+    const gridAspectRatio = columns / rows;
+    const imageAspectRatio = image.width / image.height;
+
+    let cropWidth: number;
+    let cropHeight: number;
+
+    if (imageAspectRatio > gridAspectRatio) {
+      cropHeight = image.height;
+      cropWidth = cropHeight * gridAspectRatio;
+    } else {
+      cropWidth = image.width;
+      cropHeight = cropWidth / gridAspectRatio;
+    }
+
     const startX = centerX - cropWidth / 2;
     const startY = centerY - cropHeight / 2;
 
