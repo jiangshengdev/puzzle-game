@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { usePuzzleGameLogic } from "./usePuzzleGameLogic";
 import { InputFile } from "@/components/ui/InputFile";
 
@@ -9,6 +9,10 @@ export default function PuzzleGame() {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const { pieces, handleMouseDown, handleMouseMove, handleMouseUp } =
     usePuzzleGameLogic(image);
+
+  const sortedPieces = useMemo(() => {
+    return [...pieces].sort((a, b) => a.zIndex - b.zIndex);
+  }, [pieces]);
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
@@ -39,15 +43,13 @@ export default function PuzzleGame() {
         if (canvas) {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-        // 根据 zIndex 排序拼图片
-        const sortedPieces = [...pieces].sort((a, b) => a.zIndex - b.zIndex);
         sortedPieces.forEach((piece) => piece.draw(ctx));
       }
       requestAnimationFrame(draw);
     }
 
     draw();
-  }, [pieces]);
+  }, [sortedPieces]);
 
   return (
     <div>
