@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PuzzlePiece } from "./PuzzlePiece";
 import {
   adjustGroupPosition,
@@ -17,6 +17,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
   const [dragging, setDragging] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<PuzzlePiece | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const piecesRef = useRef<PuzzlePiece[]>([]);
 
   const rows = 4;
   const columns = 6;
@@ -85,13 +86,25 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     setLeftSidePieces(lefts);
     setRightSidePieces(rights);
     setPieces(initialPieces);
+    piecesRef.current = initialPieces; // 同步到 ref
   }, [image]);
 
   function checkSnapping(movedPiece: PuzzlePiece) {
     const piecesToCheck = movedPiece.group ? movedPiece.group : [movedPiece];
 
     piecesToCheck.forEach((piece) => {
-      pieces.forEach((otherPiece) => {
+      const adjacentNumbers = [
+        piece.number - 1, // 左边的拼图块
+        piece.number + 1, // 右边的拼图块
+        piece.number - columns, // 上面的拼图块
+        piece.number + columns, // 下面的拼图块
+      ];
+
+      const adjacentPieces = piecesRef.current.filter((otherPiece) =>
+        adjacentNumbers.includes(otherPiece.number),
+      );
+
+      adjacentPieces.forEach((otherPiece) => {
         if (otherPiece === piece) return;
 
         const numberDifference = Math.abs(piece.number - otherPiece.number);
@@ -206,7 +219,9 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           }
         });
 
+        piecesRef.current = newPieces; // 同步到 ref
         setPieces(newPieces);
+        setDragging(true); // 开始拖动
         break;
       }
     }
@@ -235,7 +250,8 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
         selectedPiece.y += dy;
       }
 
-      setPieces([...pieces]);
+      // 不再调用 setPieces([...pieces]);
+      // piecesRef.current 已经更新了位置
     }
   }
 
@@ -253,10 +269,11 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           Math.round(selectedPiece.y),
         );
       }
-      setPieces([...pieces]);
+      setPieces([...piecesRef.current]); // 在拖动结束时更新状态
     }
     setDragging(false);
     setSelectedPiece(null);
+    setDragging(false); // 结束拖动
   }
 
   return {
