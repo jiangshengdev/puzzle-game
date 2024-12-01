@@ -1,3 +1,10 @@
+export interface Gaps {
+  top: "topConvex" | "bottomConvex" | null;
+  left: "leftConvex" | "rightConvex" | null;
+  bottom: "topConvex" | "bottomConvex" | null;
+  right: "leftConvex" | "rightConvex" | null;
+}
+
 export class PuzzlePiece {
   x: number;
   y: number;
@@ -11,6 +18,7 @@ export class PuzzlePiece {
   sy: number;
   sWidth: number;
   sHeight: number;
+  gaps: Gaps;
 
   constructor(
     x: number,
@@ -23,6 +31,7 @@ export class PuzzlePiece {
     sy: number,
     sWidth: number,
     sHeight: number,
+    gaps: Gaps, // 新增
   ) {
     this.x = x;
     this.y = y;
@@ -36,6 +45,7 @@ export class PuzzlePiece {
     this.sy = sy;
     this.sWidth = sWidth;
     this.sHeight = sHeight;
+    this.gaps = gaps; // 新增
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -79,6 +89,65 @@ export class PuzzlePiece {
       this.x + this.width - 5,
       this.y + this.height - 5,
     );
+
+    // 修改绘制缝隙逻辑，确定凹陷或凸起
+    const radius = 15;
+
+    // Helper 函数判断是否凸起
+    const isConvex = (direction: keyof Gaps, gap: string | null): boolean => {
+      if (!gap) return false;
+      return gap.includes(direction);
+    };
+
+    if (this.gaps.top) {
+      const convex = isConvex("top", this.gaps.top);
+      ctx.beginPath();
+      ctx.arc(this.x + this.width / 2, this.y, radius, Math.PI, 0, !convex);
+      ctx.fillStyle = convex ? "blue" : "white";
+      ctx.fill();
+    }
+    if (this.gaps.bottom) {
+      const convex = isConvex("bottom", this.gaps.bottom);
+      ctx.beginPath();
+      ctx.arc(
+        this.x + this.width / 2,
+        this.y + this.height,
+        radius,
+        0,
+        Math.PI,
+        !convex,
+      );
+      ctx.fillStyle = convex ? "blue" : "white";
+      ctx.fill();
+    }
+    if (this.gaps.left) {
+      const convex = isConvex("left", this.gaps.left);
+      ctx.beginPath();
+      ctx.arc(
+        this.x,
+        this.y + this.height / 2,
+        radius,
+        Math.PI / 2,
+        (3 * Math.PI) / 2,
+        !convex,
+      );
+      ctx.fillStyle = convex ? "blue" : "white";
+      ctx.fill();
+    }
+    if (this.gaps.right) {
+      const convex = isConvex("right", this.gaps.right);
+      ctx.beginPath();
+      ctx.arc(
+        this.x + this.width,
+        this.y + this.height / 2,
+        radius,
+        (3 * Math.PI) / 2,
+        Math.PI / 2,
+        !convex,
+      );
+      ctx.fillStyle = convex ? "blue" : "white";
+      ctx.fill();
+    }
   }
 
   isPointInside(px: number, py: number) {

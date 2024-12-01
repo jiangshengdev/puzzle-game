@@ -21,6 +21,23 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
 
   const rows = 4;
   const columns = 6;
+
+  // 新增：初始化水平缝隙数组
+  const horizontalGaps: { direction: "leftConvex" | "rightConvex" }[][] =
+    Array.from({ length: rows }, () =>
+      Array.from({ length: columns - 1 }, () => ({
+        direction: "leftConvex",
+      })),
+    );
+
+  // 新增：初始化垂直缝隙数组
+  const verticalGaps: { direction: "topConvex" | "bottomConvex" }[][] =
+    Array.from({ length: columns }, () =>
+      Array.from({ length: rows - 1 }, () => ({
+        direction: "topConvex",
+      })),
+    );
+
   useEffect(() => {
     if (!image) return; // 等待图片加载
 
@@ -59,6 +76,18 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
       for (let col = 0; col < columns; col++) {
         const number = row * columns + col + 1;
 
+        const gaps = {
+          top: row > 0 ? verticalGaps[col][row - 1]?.direction || null : null, // 调整索引
+          bottom:
+            row < rows - 1 ? verticalGaps[col][row]?.direction || null : null, // 调整索引
+          left:
+            col > 0 ? horizontalGaps[row][col - 1]?.direction || null : null, // 调整索引
+          right:
+            col < columns - 1
+              ? horizontalGaps[row][col]?.direction || null
+              : null, // 调整索引
+        };
+
         const piece = new PuzzlePiece(
           spacingX * (col + 1) - 50,
           spacingY * (row + 1) - 50,
@@ -70,6 +99,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           startY + row * pieceHeight,
           pieceWidth,
           pieceHeight,
+          gaps, // 新增
         );
         initialPieces.push(piece);
       }
