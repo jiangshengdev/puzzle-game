@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { usePuzzleGameLogic } from "./usePuzzleGameLogic";
-import { InputFile } from "@/components/ui/input-file";
+import { InputFile } from "@/components/ui/InputFile";
 
 export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
