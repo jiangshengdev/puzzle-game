@@ -49,24 +49,132 @@ export class PuzzlePiece {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    if (this.image) {
-      ctx.drawImage(
-        this.image,
-        this.sx,
-        this.sy,
-        this.sWidth,
-        this.sHeight,
-        this.x,
-        this.y,
-        this.width,
-        this.height,
-      );
-    } else {
-      ctx.fillStyle = "gray";
-      ctx.fillRect(this.x, this.y, this.width, this.height);
-      ctx.strokeStyle = "black";
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
+    // if (this.image) {
+    //   ctx.drawImage(
+    //     this.image,
+    //     this.sx,
+    //     this.sy,
+    //     this.sWidth,
+    //     this.sHeight,
+    //     this.x,
+    //     this.y,
+    //     this.width,
+    //     this.height,
+    //   );
+    //   ctx.restore();
+
+    //   // 计算 2x2 背景的尺寸
+    //   const bgWidth = this.width * 2;
+    //   const bgHeight = this.height * 2;
+
+    //   // 计算绘制位置，使背景中心与拼图块中心对齐
+    //   const bgX = this.x + this.width / 2 - bgWidth / 2;
+    //   const bgY = this.y + this.height / 2 - bgHeight / 2;
+
+    //   // 调整源图像的坐标，确保绘制正确的区域
+    //   const bgSX = this.sx - this.sWidth / 2;
+    //   const bgSY = this.sy - this.sHeight / 2;
+
+    //   ctx.drawImage(
+    //     this.image,
+    //     bgSX,
+    //     bgSY,
+    //     this.sWidth * 2,
+    //     this.sHeight * 2,
+    //     bgX,
+    //     bgY,
+    //     bgWidth,
+    //     bgHeight,
+    //   );
+    // } else {
+    //   ctx.fillStyle = "gray";
+    //   ctx.fillRect(this.x, this.y, this.width, this.height);
+    //   ctx.strokeStyle = "black";
+    //   ctx.strokeRect(this.x, this.y, this.width, this.height);
+    // }
+
+    // 绘制遮罩层
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 1)";
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    const radius = 15;
+
+    // Helper 函数判断是否凸起
+    const isConvex = (direction: keyof Gaps, gap: string | null): boolean => {
+      if (!gap) return false;
+      return gap.includes(direction);
+    };
+
+    // 修改绘制凹凸逻辑，执行布尔运算
+    if (this.gaps.top) {
+      const convex = isConvex("top", this.gaps.top);
+      ctx.beginPath();
+      ctx.arc(this.x + this.width / 2, this.y, radius, 0, Math.PI * 2);
+
+      if (convex) {
+        // 对于凸起部分，添加到遮罩层
+        ctx.globalCompositeOperation = "source-over";
+      } else {
+        // 对于凹陷部分，从遮罩层剪除
+        ctx.globalCompositeOperation = "destination-out";
+      }
+      ctx.fill();
     }
+
+    if (this.gaps.bottom) {
+      const convex = isConvex("bottom", this.gaps.bottom);
+      ctx.beginPath();
+      ctx.arc(
+        this.x + this.width / 2,
+        this.y + this.height,
+        radius,
+        0,
+        Math.PI * 2,
+      );
+
+      if (convex) {
+        ctx.globalCompositeOperation = "source-over";
+      } else {
+        ctx.globalCompositeOperation = "destination-out";
+      }
+      ctx.fill();
+    }
+
+    if (this.gaps.left) {
+      const convex = isConvex("left", this.gaps.left);
+      ctx.beginPath();
+      ctx.arc(this.x, this.y + this.height / 2, radius, 0, Math.PI * 2);
+
+      if (convex) {
+        ctx.globalCompositeOperation = "source-over";
+      } else {
+        ctx.globalCompositeOperation = "destination-out";
+      }
+      ctx.fill();
+    }
+
+    if (this.gaps.right) {
+      const convex = isConvex("right", this.gaps.right);
+      ctx.beginPath();
+      ctx.arc(
+        this.x + this.width,
+        this.y + this.height / 2,
+        radius,
+        0,
+        Math.PI * 2,
+      );
+
+      if (convex) {
+        ctx.globalCompositeOperation = "source-over";
+      } else {
+        ctx.globalCompositeOperation = "destination-out";
+      }
+      ctx.fill();
+    }
+
+    // 恢复上下文状态
+    ctx.restore();
 
     // 绘制数字
     ctx.fillStyle = "white";
@@ -89,65 +197,6 @@ export class PuzzlePiece {
       this.x + this.width - 5,
       this.y + this.height - 5,
     );
-
-    // 修改绘制缝隙逻辑，确定凹陷或凸起
-    const radius = 15;
-
-    // Helper 函数判断是否凸起
-    const isConvex = (direction: keyof Gaps, gap: string | null): boolean => {
-      if (!gap) return false;
-      return gap.includes(direction);
-    };
-
-    if (this.gaps.top) {
-      const convex = isConvex("top", this.gaps.top);
-      ctx.beginPath();
-      ctx.arc(this.x + this.width / 2, this.y, radius, Math.PI, 0, !convex);
-      ctx.fillStyle = convex ? "blue" : "white";
-      ctx.fill();
-    }
-    if (this.gaps.bottom) {
-      const convex = isConvex("bottom", this.gaps.bottom);
-      ctx.beginPath();
-      ctx.arc(
-        this.x + this.width / 2,
-        this.y + this.height,
-        radius,
-        0,
-        Math.PI,
-        !convex,
-      );
-      ctx.fillStyle = convex ? "blue" : "white";
-      ctx.fill();
-    }
-    if (this.gaps.left) {
-      const convex = isConvex("left", this.gaps.left);
-      ctx.beginPath();
-      ctx.arc(
-        this.x,
-        this.y + this.height / 2,
-        radius,
-        Math.PI / 2,
-        (3 * Math.PI) / 2,
-        !convex,
-      );
-      ctx.fillStyle = convex ? "blue" : "white";
-      ctx.fill();
-    }
-    if (this.gaps.right) {
-      const convex = isConvex("right", this.gaps.right);
-      ctx.beginPath();
-      ctx.arc(
-        this.x + this.width,
-        this.y + this.height / 2,
-        radius,
-        (3 * Math.PI) / 2,
-        Math.PI / 2,
-        !convex,
-      );
-      ctx.fillStyle = convex ? "blue" : "white";
-      ctx.fill();
-    }
   }
 
   isPointInside(px: number, py: number) {
