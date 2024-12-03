@@ -167,7 +167,8 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           Math.abs(piece.y - (otherPiece.y + otherPiece.height)) <
             SNAP_DISTANCE &&
           Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-          numberDifference === columns
+          numberDifference === columns &&
+          piece.number > otherPiece.number // 修改此行
         ) {
           if (areAlignedHorizontally(piece, otherPiece)) {
             const offsetY = otherPiece.y + otherPiece.height;
@@ -184,7 +185,8 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
         if (
           Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
           Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-          numberDifference === columns
+          numberDifference === columns &&
+          piece.number < otherPiece.number // 修改此行
         ) {
           if (areAlignedHorizontally(piece, otherPiece)) {
             const offsetY = otherPiece.y - piece.height;
