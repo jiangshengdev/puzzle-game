@@ -7,8 +7,10 @@ interface InputFileProps {
 
 export function InputFile({ onChange }: InputFileProps) {
   return (
-    <div className="grid w-full max-w-sm items-center gap-1.5">
-      <Label htmlFor="picture">图片</Label>
+    <div className="flex  w-full max-w-sm items-center gap-1.5">
+      <Label htmlFor="picture" className="shrink-0">
+        图片
+      </Label>
       <Input id="picture" type="file" onChange={onChange} />
     </div>
   );

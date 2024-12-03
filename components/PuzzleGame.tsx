@@ -3,13 +3,24 @@
 import React, { useEffect, useRef, useState } from "react";
 import { usePuzzleGameLogic } from "./usePuzzleGameLogic";
 import { InputFile } from "@/components/ui/InputFile";
+import { Switch } from "./ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button"; // 导入 Button 组件
 
 export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameIdRef = useRef<number>(0);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const { pieces, dragging, handleMouseDown, handleMouseMove, handleMouseUp } =
-    usePuzzleGameLogic(image);
+  const {
+    pieces,
+    dragging,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    resetPuzzle,
+    shufflePuzzle,
+  } = usePuzzleGameLogic(image);
+  const [debug, setDebug] = useState(false);
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
@@ -45,7 +56,7 @@ export default function PuzzleGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const sortedPieces = [...pieces].sort((a, b) => a.zIndex - b.zIndex);
-    sortedPieces.forEach((piece) => piece.draw(ctx));
+    sortedPieces.forEach((piece) => piece.draw(ctx, debug));
   }
 
   useEffect(() => {
@@ -70,9 +81,21 @@ export default function PuzzleGame() {
     };
   }, [dragging, pieces]);
 
+  useEffect(() => {
+    draw();
+  }, [debug]);
+
   return (
     <div>
-      <InputFile onChange={handleImageUpload} />
+      <div className="flex items-center space-x-4">
+        <InputFile onChange={handleImageUpload} />
+        <div className="flex items-center space-x-2">
+          <Switch id="debug-mode" checked={debug} onCheckedChange={setDebug} />
+          <Label htmlFor="debug-mode">调试模式</Label>
+        </div>
+        <Button onClick={resetPuzzle}>重置</Button>
+        <Button onClick={shufflePuzzle}>打乱</Button>
+      </div>
       <canvas
         ref={canvasRef}
         style={{ width: "800px", height: "600px", userSelect: "none" }}

@@ -36,7 +36,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
       })),
     );
 
-  useEffect(() => {
+  const initializePieces = (randomizePositions: boolean) => {
     if (!image) return;
 
     const initialPieces: PuzzlePiece[] = [];
@@ -97,6 +97,17 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           pieceHeight,
           gaps,
         );
+
+        if (randomizePositions) {
+          // 随机位置，范围在画布内
+          piece.x = Math.random() * (canvasWidth - piece.width);
+          piece.y = Math.random() * (canvasHeight - piece.height);
+        } else {
+          // 原始位置，含空隙
+          piece.x = spacingX * (col + 1) - 50;
+          piece.y = spacingY * (row + 1) - 50;
+        }
+
         initialPieces.push(piece);
       }
     }
@@ -111,9 +122,26 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
 
     setLeftSidePieces(lefts);
     setRightSidePieces(rights);
+
+    initialPieces.forEach((piece) => {
+      piece.group = null; // 清除组信息
+    });
+
     setPieces(initialPieces);
     piecesRef.current = initialPieces;
+  };
+
+  useEffect(() => {
+    initializePieces(false); // 初始加载时不随机
   }, [image]);
+
+  function resetPuzzle() {
+    initializePieces(false); // 重置为原始位置
+  }
+
+  function shufflePuzzle() {
+    initializePieces(true); // 随机打乱位置
+  }
 
   function checkSnapping(movedPiece: PuzzlePiece) {
     const piecesToCheck = movedPiece.group ? movedPiece.group : [movedPiece];
@@ -308,5 +336,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
+    resetPuzzle,
+    shufflePuzzle,
   };
 }
