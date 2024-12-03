@@ -22,7 +22,6 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
   const rows = 4;
   const columns = 6;
 
-  // 新增：初始化水平缝隙数组
   const horizontalGaps: { direction: "leftConvex" | "rightConvex" }[][] =
     Array.from({ length: rows }, () =>
       Array.from({ length: columns - 1 }, () => ({
@@ -30,7 +29,6 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
       })),
     );
 
-  // 新增：初始化垂直缝隙数组
   const verticalGaps: { direction: "topConvex" | "bottomConvex" }[][] =
     Array.from({ length: columns }, () =>
       Array.from({ length: rows - 1 }, () => ({
@@ -39,7 +37,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     );
 
   useEffect(() => {
-    if (!image) return; // 等待图片加载
+    if (!image) return;
 
     const initialPieces: PuzzlePiece[] = [];
     const canvasWidth = 800;
@@ -47,11 +45,9 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     const spacingX = canvasWidth / (columns + 1);
     const spacingY = canvasHeight / (rows + 1);
 
-    // 计算图片中心部分的起始坐标和尺寸
     const centerX = image.width / 2;
     const centerY = image.height / 2;
 
-    // 根据行数和列数的比例截取图片
     const gridAspectRatio = columns / rows;
     const imageAspectRatio = image.width / image.height;
 
@@ -77,15 +73,15 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
         const number = row * columns + col + 1;
 
         const gaps = {
-          top: row > 0 ? verticalGaps[col][row - 1]?.direction || null : null, // 调整索引
+          top: row > 0 ? verticalGaps[col][row - 1]?.direction || null : null,
           bottom:
-            row < rows - 1 ? verticalGaps[col][row]?.direction || null : null, // 调整索引
+            row < rows - 1 ? verticalGaps[col][row]?.direction || null : null,
           left:
-            col > 0 ? horizontalGaps[row][col - 1]?.direction || null : null, // 调整索引
+            col > 0 ? horizontalGaps[row][col - 1]?.direction || null : null,
           right:
             col < columns - 1
               ? horizontalGaps[row][col]?.direction || null
-              : null, // 调整索引
+              : null,
         };
 
         const piece = new PuzzlePiece(
@@ -99,7 +95,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           startY + row * pieceHeight,
           pieceWidth,
           pieceHeight,
-          gaps, // 新增
+          gaps,
         );
         initialPieces.push(piece);
       }
@@ -116,7 +112,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     setLeftSidePieces(lefts);
     setRightSidePieces(rights);
     setPieces(initialPieces);
-    piecesRef.current = initialPieces; // 同步到 ref
+    piecesRef.current = initialPieces;
   }, [image]);
 
   function checkSnapping(movedPiece: PuzzlePiece) {
@@ -124,10 +120,10 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
 
     piecesToCheck.forEach((piece) => {
       const adjacentNumbers = [
-        piece.number - 1, // 左边的拼图块
-        piece.number + 1, // 右边的拼图块
-        piece.number - columns, // 上面的拼图块
-        piece.number + columns, // 下面的拼图块
+        piece.number - 1,
+        piece.number + 1,
+        piece.number - columns,
+        piece.number + columns,
       ];
 
       const adjacentPieces = piecesRef.current.filter((otherPiece) =>
@@ -236,7 +232,6 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
         setDragOffset({ x: mouseX - pieces[i].x, y: mouseY - pieces[i].y });
         setDragging(true);
 
-        // 将选中拼图移动到数组末尾并重新分配 zIndex
         const newPieces = [...pieces];
         const selected = newPieces.splice(i, 1)[0];
         newPieces.push(selected);
@@ -249,9 +244,9 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           }
         });
 
-        piecesRef.current = newPieces; // 同步到 ref
+        piecesRef.current = newPieces;
         setPieces(newPieces);
-        setDragging(true); // 开始拖动
+        setDragging(true);
         break;
       }
     }
@@ -279,9 +274,6 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
         selectedPiece.x += dx;
         selectedPiece.y += dy;
       }
-
-      // 不再调用 setPieces([...pieces]);
-      // piecesRef.current 已经更新了位置
     }
   }
 
@@ -299,11 +291,11 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           Math.round(selectedPiece.y),
         );
       }
-      setPieces([...piecesRef.current]); // 在拖动结束时更新状态
+      setPieces([...piecesRef.current]);
     }
     setDragging(false);
     setSelectedPiece(null);
-    setDragging(false); // 结束拖动
+    setDragging(false);
   }
 
   return {

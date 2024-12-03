@@ -31,7 +31,7 @@ export class PuzzlePiece {
     sy: number,
     sWidth: number,
     sHeight: number,
-    gaps: Gaps, // 新增
+    gaps: Gaps,
   ) {
     this.x = x;
     this.y = y;
@@ -39,13 +39,13 @@ export class PuzzlePiece {
     this.height = height;
     this.group = null;
     this.number = number;
-    this.zIndex = number; // 初始化 zIndex
+    this.zIndex = number;
     this.image = image;
     this.sx = sx;
     this.sy = sy;
     this.sWidth = sWidth;
     this.sHeight = sHeight;
-    this.gaps = gaps; // 新增
+    this.gaps = gaps;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -93,30 +93,25 @@ export class PuzzlePiece {
     //   ctx.strokeRect(this.x, this.y, this.width, this.height);
     // }
 
-    // 绘制遮罩层
     ctx.save();
     ctx.fillStyle = "rgba(0, 0, 0, 1)";
     ctx.fillRect(this.x, this.y, this.width, this.height);
 
     const radius = 15;
 
-    // Helper 函数判断是否凸起
     const isConvex = (direction: keyof Gaps, gap: string | null): boolean => {
       if (!gap) return false;
       return gap.includes(direction);
     };
 
-    // 修改绘制凹凸逻辑，执行布尔运算
     if (this.gaps.top) {
       const convex = isConvex("top", this.gaps.top);
       ctx.beginPath();
       ctx.arc(this.x + this.width / 2, this.y, radius, 0, Math.PI * 2);
 
       if (convex) {
-        // 对于凸起部分，添加到遮罩层
         ctx.globalCompositeOperation = "source-over";
       } else {
-        // 对于凹陷部分，从遮罩层剪除
         ctx.globalCompositeOperation = "destination-out";
       }
       ctx.fill();
@@ -173,10 +168,8 @@ export class PuzzlePiece {
       ctx.fill();
     }
 
-    // 恢复上下文状态
     ctx.restore();
 
-    // 绘制数字
     ctx.fillStyle = "white";
     ctx.font = "30px Arial";
     ctx.textAlign = "center";
@@ -187,7 +180,6 @@ export class PuzzlePiece {
       this.y + this.height / 2,
     );
 
-    // 显示 zIndex 数字在右下角
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
     ctx.textAlign = "right";

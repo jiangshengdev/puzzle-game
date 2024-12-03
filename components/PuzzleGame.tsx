@@ -6,7 +6,7 @@ import { InputFile } from "@/components/ui/InputFile";
 
 export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameIdRef = useRef<number>(0); // 用于存储动画帧的 ID
+  const animationFrameIdRef = useRef<number>(0);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const { pieces, dragging, handleMouseDown, handleMouseMove, handleMouseUp } =
     usePuzzleGameLogic(image);
@@ -21,7 +21,6 @@ export default function PuzzleGame() {
     }
   }
 
-  // 初始化画布，只在组件挂载时执行一次
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -37,7 +36,6 @@ export default function PuzzleGame() {
     ctx.scale(ratio, ratio);
   }, []);
 
-  // 绘制函数
   function draw() {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -46,15 +44,12 @@ export default function PuzzleGame() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 根据 zIndex 排序拼图块
     const sortedPieces = [...pieces].sort((a, b) => a.zIndex - b.zIndex);
     sortedPieces.forEach((piece) => piece.draw(ctx));
   }
 
-  // 在拼图状态或拖动状态变化时，决定是否启动/停止动画循环
   useEffect(() => {
     if (dragging) {
-      // 开始拖动，启动动画循环
       function animate() {
         draw();
         animationFrameIdRef.current = requestAnimationFrame(animate);
@@ -62,14 +57,12 @@ export default function PuzzleGame() {
 
       animationFrameIdRef.current = requestAnimationFrame(animate);
     } else {
-      // 停止拖动，停止动画循环并重绘一次
       if (animationFrameIdRef.current) {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
       draw();
     }
 
-    // 组件卸载时清除动画帧
     return () => {
       if (animationFrameIdRef.current) {
         cancelAnimationFrame(animationFrameIdRef.current);

@@ -91,7 +91,6 @@ export function mergeGroups(pieceA: PuzzlePiece, pieceB: PuzzlePiece) {
     pieceB.group = newGroup;
   }
 
-  // 统一合并后的zIndex
   const newZIndex = Math.max(...pieceA.group!.map((p) => p.zIndex));
   pieceA.group!.forEach((piece) => {
     piece.zIndex = newZIndex;
