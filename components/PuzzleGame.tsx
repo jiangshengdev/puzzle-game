@@ -5,7 +5,7 @@ import { usePuzzleGameLogic } from "./usePuzzleGameLogic";
 import { InputFile } from "@/components/ui/InputFile";
 import { Switch } from "./ui/switch";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button"; // 导入 Button 组件
+import { Button } from "@/components/ui/button";
 
 export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);

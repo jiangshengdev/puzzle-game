@@ -7,7 +7,7 @@ interface InputFileProps {
 
 export function InputFile({ onChange }: InputFileProps) {
   return (
-    <div className="flex  w-full max-w-sm items-center gap-1.5">
+    <div className="flex w-full max-w-sm items-center gap-1.5">
       <Label htmlFor="picture" className="shrink-0">
         图片
       </Label>
