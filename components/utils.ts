@@ -1,4 +1,4 @@
-import { PuzzlePiece } from "./PuzzlePiece";
+import { Gaps, PuzzlePiece } from "./PuzzlePiece";
 
 export const SNAP_DISTANCE = 20;
 
@@ -95,4 +95,9 @@ export function mergeGroups(pieceA: PuzzlePiece, pieceB: PuzzlePiece) {
   pieceA.group!.forEach((piece) => {
     piece.zIndex = newZIndex;
   });
+}
+
+export function isConvex(direction: keyof Gaps, gap: string | null): boolean {
+  if (!gap) return false;
+  return gap.includes(direction);
 }
