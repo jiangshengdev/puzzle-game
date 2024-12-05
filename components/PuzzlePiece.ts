@@ -21,6 +21,7 @@ export class PuzzlePiece {
   sWidth: number;
   sHeight: number;
   gaps: Gaps;
+  path: Path2D;
 
   constructor(
     x: number,
@@ -48,26 +49,19 @@ export class PuzzlePiece {
     this.sWidth = sWidth;
     this.sHeight = sHeight;
     this.gaps = gaps;
+    this.path = new Path2D();
   }
 
   draw(ctx: CanvasRenderingContext2D, debug: boolean) {
+    this.path = new Path2D();
+    this.path.moveTo(this.x, this.y);
+
+    this.createPath(this.path);
+
     ctx.save();
-
     ctx.beginPath();
-    ctx.moveTo(this.x, this.y);
-
-    this.drawSide(ctx, "top", "red");
-    ctx.lineTo(this.x + this.width, this.y);
-
-    this.drawSide(ctx, "right", "green");
-    ctx.lineTo(this.x + this.width, this.y + this.height);
-
-    this.drawSide(ctx, "bottom", "blue");
-    ctx.lineTo(this.x, this.y + this.height);
-
-    this.drawSide(ctx, "left", "yellow");
-
-    ctx.clip();
+    ctx.stroke(this.path);
+    ctx.clip(this.path);
 
     if (this.image) {
       const bgWidth = this.width * 2;
@@ -98,7 +92,7 @@ export class PuzzlePiece {
     }
 
     ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.stroke();
 
     ctx.restore();
@@ -127,12 +121,8 @@ export class PuzzlePiece {
   }
 
   isPointInside(px: number, py: number) {
-    return (
-      px >= this.x &&
-      px <= this.x + this.width &&
-      py >= this.y &&
-      py <= this.y + this.height
-    );
+    const ctx = document.createElement("canvas").getContext("2d")!;
+    return ctx.isPointInPath(this.path, px, py);
   }
 
   alignTo(newX: number, newY: number) {
@@ -140,12 +130,15 @@ export class PuzzlePiece {
     this.y = newY;
   }
 
-  private drawSide(
-    ctx: CanvasRenderingContext2D,
-    side: "top" | "right" | "bottom" | "left",
-    color: string,
-  ) {
-    ctx.strokeStyle = color;
+  private createPath(path: Path2D) {
+    this.drawSide(path, "top");
+    this.drawSide(path, "right");
+    this.drawSide(path, "bottom");
+    this.drawSide(path, "left");
+    path.closePath();
+  }
+
+  private drawSide(path: Path2D, side: "top" | "right" | "bottom" | "left") {
     const gap = this.gaps[side];
     if (gap) {
       const convex = isConvex(side, gap);
@@ -155,9 +148,9 @@ export class PuzzlePiece {
       switch (side) {
         case "top":
           midX = this.x + this.width / 2;
-          ctx.lineTo(midX - r, this.y);
-          ctx.lineTo(this.x + this.width / 3, this.y);
-          ctx.arc(
+          path.lineTo(midX - r, this.y);
+          path.lineTo(this.x + this.width / 3, this.y);
+          path.arc(
             midX,
             convex ? this.y - r : this.y + r,
             r,
@@ -165,14 +158,14 @@ export class PuzzlePiece {
             !convex ? Math.PI : 0,
             !convex,
           );
-          ctx.lineTo(this.x + (2 * this.width) / 3, this.y);
-          ctx.lineTo(this.x + this.width, this.y);
+          path.lineTo(this.x + (2 * this.width) / 3, this.y);
+          path.lineTo(this.x + this.width, this.y);
           break;
         case "right":
           midY = this.y + this.height / 2;
-          ctx.lineTo(this.x + this.width, this.y);
-          ctx.lineTo(this.x + this.width, midY - r);
-          ctx.arc(
+          path.lineTo(this.x + this.width, this.y);
+          path.lineTo(this.x + this.width, midY - r);
+          path.arc(
             convex ? this.x + this.width + r : this.x + this.width - r,
             midY,
             r,
@@ -180,14 +173,14 @@ export class PuzzlePiece {
             !convex ? Math.PI / 2 : -Math.PI / 2,
             !convex,
           );
-          ctx.lineTo(this.x + this.width, midY + r);
-          ctx.lineTo(this.x + this.width, this.y + this.height);
+          path.lineTo(this.x + this.width, midY + r);
+          path.lineTo(this.x + this.width, this.y + this.height);
           break;
         case "bottom":
           midX = this.x + this.width / 2;
-          ctx.lineTo(this.x + this.width, this.y + this.height);
-          ctx.lineTo(this.x + (2 * this.width) / 3, this.y + this.height);
-          ctx.arc(
+          path.lineTo(this.x + this.width, this.y + this.height);
+          path.lineTo(this.x + (2 * this.width) / 3, this.y + this.height);
+          path.arc(
             midX,
             convex ? this.y + this.height + r : this.y + this.height - r,
             r,
@@ -195,14 +188,14 @@ export class PuzzlePiece {
             convex ? 0 : Math.PI,
             !convex,
           );
-          ctx.lineTo(this.x + this.width / 3, this.y + this.height);
-          ctx.lineTo(this.x, this.y + this.height);
+          path.lineTo(this.x + this.width / 3, this.y + this.height);
+          path.lineTo(this.x, this.y + this.height);
           break;
         case "left":
           midY = this.y + this.height / 2;
-          ctx.lineTo(this.x, this.y + this.height);
-          ctx.lineTo(this.x, this.y + (2 * this.height) / 3);
-          ctx.arc(
+          path.lineTo(this.x, this.y + this.height);
+          path.lineTo(this.x, this.y + (2 * this.height) / 3);
+          path.arc(
             convex ? this.x - r : this.x + r,
             midY,
             r,
@@ -210,8 +203,23 @@ export class PuzzlePiece {
             convex ? -Math.PI / 2 : Math.PI / 2,
             !convex,
           );
-          ctx.lineTo(this.x, this.y + this.height / 3);
-          ctx.lineTo(this.x, this.y);
+          path.lineTo(this.x, this.y + this.height / 3);
+          path.lineTo(this.x, this.y);
+          break;
+      }
+    } else {
+      switch (side) {
+        case "top":
+          path.lineTo(this.x + this.width, this.y);
+          break;
+        case "right":
+          path.lineTo(this.x + this.width, this.y + this.height);
+          break;
+        case "bottom":
+          path.lineTo(this.x, this.y + this.height);
+          break;
+        case "left":
+          path.lineTo(this.x, this.y);
           break;
       }
     }

@@ -21,6 +21,13 @@ export default function PuzzleGame() {
     shufflePuzzle,
   } = usePuzzleGameLogic(image);
   const [debug, setDebug] = useState(false);
+  const offscreenCanvas = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    offscreenCanvas.current = document.createElement("canvas");
+  }, []);
+
+  const offscreenCtx = useRef<CanvasRenderingContext2D | null>(null);
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
@@ -45,6 +52,12 @@ export default function PuzzleGame() {
     canvas.width = width * ratio;
     canvas.height = height * ratio;
     ctx.scale(ratio, ratio);
+  }, []);
+
+  useEffect(() => {
+    if (offscreenCanvas.current) {
+      offscreenCtx.current = offscreenCanvas.current.getContext("2d");
+    }
   }, []);
 
   function draw() {
@@ -99,7 +112,19 @@ export default function PuzzleGame() {
       <canvas
         ref={canvasRef}
         style={{ width: "800px", height: "600px", userSelect: "none" }}
-        onMouseDown={handleMouseDown}
+        onMouseDown={(e) => {
+          for (let i = pieces.length - 1; i >= 0; i--) {
+            if (
+              pieces[i].isPointInside(
+                e.nativeEvent.offsetX,
+                e.nativeEvent.offsetY,
+              )
+            ) {
+              handleMouseDown(e);
+              break;
+            }
+          }
+        }}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
