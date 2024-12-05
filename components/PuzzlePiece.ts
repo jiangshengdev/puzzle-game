@@ -56,19 +56,16 @@ export class PuzzlePiece {
     ctx.beginPath();
     ctx.moveTo(this.x, this.y);
 
-    const radius = 15;
-
-    this.drawSide(ctx, "top", radius);
+    this.drawSide(ctx, "top", "red");
     ctx.lineTo(this.x + this.width, this.y);
 
-    this.drawSide(ctx, "right", radius);
+    this.drawSide(ctx, "right", "green");
     ctx.lineTo(this.x + this.width, this.y + this.height);
 
-    this.drawSide(ctx, "bottom", radius);
+    this.drawSide(ctx, "bottom", "blue");
     ctx.lineTo(this.x, this.y + this.height);
 
-    this.drawSide(ctx, "left", radius);
-    ctx.closePath();
+    this.drawSide(ctx, "left", "yellow");
 
     ctx.clip();
 
@@ -93,18 +90,6 @@ export class PuzzlePiece {
         bgWidth,
         bgHeight,
       );
-
-      ctx.drawImage(
-        this.image,
-        this.sx,
-        this.sy,
-        this.sWidth,
-        this.sHeight,
-        this.x,
-        this.y,
-        this.width,
-        this.height,
-      );
     } else {
       ctx.fillStyle = "gray";
       ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -113,7 +98,7 @@ export class PuzzlePiece {
     }
 
     ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     ctx.restore();
@@ -158,92 +143,75 @@ export class PuzzlePiece {
   private drawSide(
     ctx: CanvasRenderingContext2D,
     side: "top" | "right" | "bottom" | "left",
-    radius: number,
+    color: string,
   ) {
+    ctx.strokeStyle = color;
     const gap = this.gaps[side];
     if (gap) {
       const convex = isConvex(side, gap);
       let midX, midY;
+      const r =
+        side === "top" || side === "bottom" ? this.width / 6 : this.height / 6;
       switch (side) {
         case "top":
           midX = this.x + this.width / 2;
-          if (convex) {
-            ctx.lineTo(midX - radius, this.y);
-            ctx.quadraticCurveTo(
-              midX,
-              this.y - radius * 1.5,
-              midX + radius,
-              this.y,
-            );
-          } else {
-            ctx.lineTo(midX - radius, this.y);
-            ctx.quadraticCurveTo(
-              midX,
-              this.y + radius * 1.5,
-              midX + radius,
-              this.y,
-            );
-          }
+          ctx.lineTo(midX - r, this.y);
+          ctx.lineTo(this.x + this.width / 3, this.y);
+          ctx.arc(
+            midX,
+            convex ? this.y - r : this.y + r,
+            r,
+            !convex ? 0 : Math.PI,
+            !convex ? Math.PI : 0,
+            !convex,
+          );
+          ctx.lineTo(this.x + (2 * this.width) / 3, this.y);
+          ctx.lineTo(this.x + this.width, this.y);
           break;
         case "right":
           midY = this.y + this.height / 2;
-          if (convex) {
-            ctx.lineTo(this.x + this.width, midY - radius);
-            ctx.quadraticCurveTo(
-              this.x + this.width + radius * 1.5,
-              midY,
-              this.x + this.width,
-              midY + radius,
-            );
-          } else {
-            ctx.lineTo(this.x + this.width, midY - radius);
-            ctx.quadraticCurveTo(
-              this.x + this.width - radius * 1.5,
-              midY,
-              this.x + this.width,
-              midY + radius,
-            );
-          }
+          ctx.lineTo(this.x + this.width, this.y);
+          ctx.lineTo(this.x + this.width, midY - r);
+          ctx.arc(
+            convex ? this.x + this.width + r : this.x + this.width - r,
+            midY,
+            r,
+            !convex ? -Math.PI / 2 : Math.PI / 2,
+            !convex ? Math.PI / 2 : -Math.PI / 2,
+            !convex,
+          );
+          ctx.lineTo(this.x + this.width, midY + r);
+          ctx.lineTo(this.x + this.width, this.y + this.height);
           break;
         case "bottom":
           midX = this.x + this.width / 2;
-          if (convex) {
-            ctx.lineTo(midX + radius, this.y + this.height);
-            ctx.quadraticCurveTo(
-              midX,
-              this.y + this.height + radius * 1.5,
-              midX - radius,
-              this.y + this.height,
-            );
-          } else {
-            ctx.lineTo(midX + radius, this.y + this.height);
-            ctx.quadraticCurveTo(
-              midX,
-              this.y + this.height - radius * 1.5,
-              midX - radius,
-              this.y + this.height,
-            );
-          }
+          ctx.lineTo(this.x + this.width, this.y + this.height);
+          ctx.lineTo(this.x + (2 * this.width) / 3, this.y + this.height);
+          ctx.arc(
+            midX,
+            convex ? this.y + this.height + r : this.y + this.height - r,
+            r,
+            convex ? Math.PI : 0,
+            convex ? 0 : Math.PI,
+            !convex,
+          );
+          ctx.lineTo(this.x + this.width / 3, this.y + this.height);
+          ctx.lineTo(this.x, this.y + this.height);
           break;
         case "left":
           midY = this.y + this.height / 2;
-          if (convex) {
-            ctx.lineTo(this.x, midY + radius);
-            ctx.quadraticCurveTo(
-              this.x - radius * 1.5,
-              midY,
-              this.x,
-              midY - radius,
-            );
-          } else {
-            ctx.lineTo(this.x, midY + radius);
-            ctx.quadraticCurveTo(
-              this.x + radius * 1.5,
-              midY,
-              this.x,
-              midY - radius,
-            );
-          }
+          ctx.lineTo(this.x, this.y + this.height);
+          ctx.lineTo(this.x, this.y + (2 * this.height) / 3);
+          ctx.arc(
+            convex ? this.x - r : this.x + r,
+            midY,
+            r,
+            convex ? Math.PI / 2 : -Math.PI / 2,
+            convex ? -Math.PI / 2 : Math.PI / 2,
+            !convex,
+          );
+          ctx.lineTo(this.x, this.y + this.height / 3);
+          ctx.lineTo(this.x, this.y);
           break;
       }
     }
