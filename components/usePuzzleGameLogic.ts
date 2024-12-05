@@ -99,11 +99,9 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
         );
 
         if (randomizePositions) {
-          // 随机位置，范围在画布内
           piece.x = Math.random() * (canvasWidth - piece.width);
           piece.y = Math.random() * (canvasHeight - piece.height);
         } else {
-          // 原始位置，含空隙
           piece.x = spacingX * (col + 1) - 50;
           piece.y = spacingY * (row + 1) - 50;
         }
@@ -124,7 +122,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     setRightSidePieces(rights);
 
     initialPieces.forEach((piece) => {
-      piece.group = null; // 清除组信息
+      piece.group = null;
     });
 
     setPieces(initialPieces);
@@ -132,15 +130,15 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
   };
 
   useEffect(() => {
-    initializePieces(false); // 初始加载时不随机
+    initializePieces(false);
   }, [image]);
 
   function resetPuzzle() {
-    initializePieces(false); // 重置为原始位置
+    initializePieces(false);
   }
 
   function shufflePuzzle() {
-    initializePieces(true); // 随机打乱位置
+    initializePieces(true);
   }
 
   function checkSnapping(movedPiece: PuzzlePiece) {
@@ -168,7 +166,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
             SNAP_DISTANCE &&
           Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
           numberDifference === columns &&
-          piece.number > otherPiece.number // 修改此行
+          piece.number > otherPiece.number
         ) {
           if (areAlignedHorizontally(piece, otherPiece)) {
             const offsetY = otherPiece.y + otherPiece.height;
@@ -186,7 +184,7 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
           Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
           numberDifference === columns &&
-          piece.number < otherPiece.number // 修改此行
+          piece.number < otherPiece.number
         ) {
           if (areAlignedHorizontally(piece, otherPiece)) {
             const offsetY = otherPiece.y - piece.height;
