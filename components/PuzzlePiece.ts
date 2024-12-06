@@ -68,7 +68,6 @@ export class PuzzlePiece {
 
     ctx.save();
     ctx.beginPath();
-    ctx.stroke(this.path);
     ctx.clip(this.path);
 
     if (this.image) {
@@ -95,13 +94,7 @@ export class PuzzlePiece {
     } else {
       ctx.fillStyle = "gray";
       ctx.fillRect(this.x, this.y, this.width, this.height);
-      ctx.strokeStyle = "black";
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
     }
-
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
-    ctx.stroke();
 
     ctx.restore();
 
