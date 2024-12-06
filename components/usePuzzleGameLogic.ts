@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Gaps, PuzzlePiece } from "./PuzzlePiece";
+import { PuzzlePiece } from "./PuzzlePiece";
 import {
   adjustGroupPosition,
   alignHorizontally,
@@ -9,81 +9,6 @@ import {
   mergeGroups,
   SNAP_DISTANCE,
 } from "./utils";
-
-function getMousePosition(e: React.MouseEvent<HTMLCanvasElement>): {
-  x: number;
-  y: number;
-} {
-  const canvas = e.currentTarget;
-  const rect = canvas.getBoundingClientRect();
-  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-}
-
-function calculatePiecePosition(
-  col: number,
-  row: number,
-  spacingX: number,
-  spacingY: number,
-  pieceWidth: number,
-  pieceHeight: number,
-  randomizePositions: boolean,
-  canvasWidth: number,
-  canvasHeight: number,
-): { x: number; y: number } {
-  if (randomizePositions) {
-    return {
-      x: Math.random() * (canvasWidth - pieceWidth),
-      y: Math.random() * (canvasHeight - pieceHeight),
-    };
-  } else {
-    return {
-      x: spacingX * (col + 1) - pieceWidth / 2,
-      y: spacingY * (row + 1) - pieceHeight / 2,
-    };
-  }
-}
-
-function createPuzzlePiece(
-  position: { x: number; y: number },
-  number: number,
-  image: HTMLImageElement,
-  cropX: number,
-  cropY: number,
-  pieceWidth: number,
-  pieceHeight: number,
-  gaps: Gaps,
-): PuzzlePiece {
-  return new PuzzlePiece(
-    position.x,
-    position.y,
-    pieceWidth,
-    pieceHeight,
-    number,
-    image,
-    cropX,
-    cropY,
-    pieceWidth,
-    pieceHeight,
-    gaps,
-  );
-}
-
-function alignAndMergePieces(
-  piece: PuzzlePiece,
-  otherPiece: PuzzlePiece,
-  offsetX: number,
-  offsetY: number,
-  alignFunc: (p1: PuzzlePiece, p2: PuzzlePiece) => void,
-) {
-  if (piece.group) {
-    adjustGroupPosition(piece.group, offsetX - piece.x, offsetY - piece.y);
-  } else {
-    piece.x = offsetX;
-    piece.y = offsetY;
-  }
-  alignFunc(piece, otherPiece);
-  mergeGroups(piece, otherPiece);
-}
 
 export function usePuzzleGameLogic(image: HTMLImageElement | null) {
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
@@ -160,20 +85,11 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
                 : null,
           };
 
-          const position = calculatePiecePosition(
-            col,
-            row,
-            spacingX,
-            spacingY,
-            pieceWidth,
-            pieceHeight,
-            randomizePositions,
-            canvasWidth,
-            canvasHeight,
-          );
-
-          const piece = createPuzzlePiece(
-            position,
+          const piece = new PuzzlePiece(
+            spacingX * (col + 1) - 50,
+            spacingY * (row + 1) - 50,
+            100,
+            100,
             number,
             image,
             startX + col * pieceWidth,
@@ -182,6 +98,14 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
             pieceHeight,
             gaps,
           );
+
+          if (randomizePositions) {
+            piece.x = Math.random() * (canvasWidth - piece.width);
+            piece.y = Math.random() * (canvasHeight - piece.height);
+          } else {
+            piece.x = spacingX * (col + 1) - 50;
+            piece.y = spacingY * (row + 1) - 50;
+          }
 
           initialPieces.push(piece);
         }
@@ -248,13 +172,14 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           piece.number > otherPiece.number
         ) {
           if (areAlignedHorizontally(piece, otherPiece)) {
-            alignAndMergePieces(
-              piece,
-              otherPiece,
-              piece.x,
-              otherPiece.y + otherPiece.height,
-              alignHorizontally,
-            );
+            const offsetY = otherPiece.y + otherPiece.height;
+            if (piece.group) {
+              adjustGroupPosition(piece.group, 0, offsetY - piece.y);
+            } else {
+              piece.y = offsetY;
+            }
+            alignHorizontally(piece, otherPiece);
+            mergeGroups(piece, otherPiece);
           }
         }
 
@@ -327,7 +252,10 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
   }
 
   function handleMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
-    const { x: mouseX, y: mouseY } = getMousePosition(e);
+    const canvas = e.currentTarget;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
     for (let i = pieces.length - 1; i >= 0; i--) {
       if (pieces[i].isPointInside(mouseX, mouseY)) {
@@ -357,7 +285,10 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
 
   function handleMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
     if (dragging && selectedPiece) {
-      const { x: mouseX, y: mouseY } = getMousePosition(e);
+      const canvas = e.currentTarget;
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
       const newX = mouseX - dragOffset.x;
       const newY = mouseY - dragOffset.y;
