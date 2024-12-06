@@ -1,18 +1,26 @@
 import { isConvex } from "./utils";
 
+export type HorizontalGapDirection = "leftConvex" | "rightConvex";
+export type VerticalGapDirection = "topConvex" | "bottomConvex";
+export type GapDirection = HorizontalGapDirection | VerticalGapDirection;
+
+export interface Gap {
+  direction: GapDirection;
+}
+
 export interface Gaps {
-  top: "topConvex" | "bottomConvex" | null;
-  left: "leftConvex" | "rightConvex" | null;
-  bottom: "topConvex" | "bottomConvex" | null;
-  right: "leftConvex" | "rightConvex" | null;
+  top: VerticalGapDirection | null;
+  left: HorizontalGapDirection | null;
+  bottom: VerticalGapDirection | null;
+  right: HorizontalGapDirection | null;
 }
 
 export class PuzzlePiece {
+  private static _staticCtx: CanvasRenderingContext2D | null = null;
   x: number;
   y: number;
   width: number;
   height: number;
-  group: PuzzlePiece[] | null;
   number: number;
   zIndex: number;
   image: HTMLImageElement | null;
@@ -40,7 +48,6 @@ export class PuzzlePiece {
     this.y = y;
     this.width = width;
     this.height = height;
-    this.group = null;
     this.number = number;
     this.zIndex = number;
     this.image = image;
@@ -60,7 +67,6 @@ export class PuzzlePiece {
 
     ctx.save();
     ctx.beginPath();
-    ctx.stroke(this.path);
     ctx.clip(this.path);
 
     if (this.image) {
@@ -87,13 +93,7 @@ export class PuzzlePiece {
     } else {
       ctx.fillStyle = "gray";
       ctx.fillRect(this.x, this.y, this.width, this.height);
-      ctx.strokeStyle = "black";
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
     }
-
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
-    ctx.stroke();
 
     ctx.restore();
 
@@ -121,8 +121,12 @@ export class PuzzlePiece {
   }
 
   isPointInside(px: number, py: number) {
-    const ctx = document.createElement("canvas").getContext("2d")!;
-    return ctx.isPointInPath(this.path, px, py);
+    if (!PuzzlePiece._staticCtx) {
+      PuzzlePiece._staticCtx = document
+        .createElement("canvas")
+        .getContext("2d")!;
+    }
+    return PuzzlePiece._staticCtx.isPointInPath(this.path, px, py);
   }
 
   alignTo(newX: number, newY: number) {
