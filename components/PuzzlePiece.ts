@@ -1,10 +1,18 @@
 import { isConvex } from "./utils";
 
+export type HorizontalGapDirection = "leftConvex" | "rightConvex";
+export type VerticalGapDirection = "topConvex" | "bottomConvex";
+export type GapDirection = HorizontalGapDirection | VerticalGapDirection;
+
+export interface Gap {
+  direction: GapDirection;
+}
+
 export interface Gaps {
-  top: "topConvex" | "bottomConvex" | null;
-  left: "leftConvex" | "rightConvex" | null;
-  bottom: "topConvex" | "bottomConvex" | null;
-  right: "leftConvex" | "rightConvex" | null;
+  top: VerticalGapDirection | null;
+  left: HorizontalGapDirection | null;
+  bottom: VerticalGapDirection | null;
+  right: HorizontalGapDirection | null;
 }
 
 export class PuzzlePiece {

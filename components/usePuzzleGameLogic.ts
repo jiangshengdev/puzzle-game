@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PuzzlePiece } from "./PuzzlePiece";
+import {
+  Gap,
+  Gaps,
+  HorizontalGapDirection,
+  PuzzlePiece,
+  VerticalGapDirection,
+} from "./PuzzlePiece";
 import {
   adjustGroupPosition,
   alignHorizontally,
@@ -22,22 +28,21 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
   const rows = 4;
   const columns = 6;
 
-  const horizontalGaps: { direction: "leftConvex" | "rightConvex" }[][] =
-    useMemo(
-      () =>
-        Array.from({ length: rows }, () =>
-          Array.from({ length: columns - 1 }, () => ({
-            direction: "leftConvex",
-          })),
-        ),
-      [rows, columns],
-    );
+  const horizontalGaps: Gap[][] = useMemo(
+    () =>
+      Array.from({ length: rows }, () =>
+        Array.from({ length: columns - 1 }, () => ({
+          direction: "leftConvex" as HorizontalGapDirection,
+        })),
+      ),
+    [rows, columns],
+  );
 
-  const verticalGaps: { direction: "topConvex" | "bottomConvex" }[][] = useMemo(
+  const verticalGaps: Gap[][] = useMemo(
     () =>
       Array.from({ length: columns }, () =>
         Array.from({ length: rows - 1 }, () => ({
-          direction: "topConvex",
+          direction: "topConvex" as VerticalGapDirection,
         })),
       ),
     [rows, columns],
@@ -80,15 +85,25 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
         for (let col = 0; col < columns; col++) {
           const number = row * columns + col + 1;
 
-          const gaps = {
-            top: row > 0 ? verticalGaps[col][row - 1]?.direction || null : null,
+          const gaps: Gaps = {
+            top:
+              row > 0
+                ? (verticalGaps[col][row - 1]
+                    ?.direction as VerticalGapDirection)
+                : null,
             bottom:
-              row < rows - 1 ? verticalGaps[col][row]?.direction || null : null,
+              row < rows - 1
+                ? (verticalGaps[col][row]?.direction as VerticalGapDirection)
+                : null,
             left:
-              col > 0 ? horizontalGaps[row][col - 1]?.direction || null : null,
+              col > 0
+                ? (horizontalGaps[row][col - 1]
+                    ?.direction as HorizontalGapDirection)
+                : null,
             right:
               col < columns - 1
-                ? horizontalGaps[row][col]?.direction || null
+                ? (horizontalGaps[row][col]
+                    ?.direction as HorizontalGapDirection)
                 : null,
           };
 
