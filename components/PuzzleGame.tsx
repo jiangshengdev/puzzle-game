@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePuzzleGameLogic } from "./usePuzzleGameLogic";
 import { InputFile } from "@/components/ui/InputFile";
 import { Switch } from "./ui/switch";
@@ -60,7 +60,7 @@ export default function PuzzleGame() {
     }
   }, []);
 
-  function draw() {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -70,7 +70,7 @@ export default function PuzzleGame() {
 
     const sortedPieces = [...pieces].sort((a, b) => a.zIndex - b.zIndex);
     sortedPieces.forEach((piece) => piece.draw(ctx, debug));
-  }
+  }, [pieces, debug]);
 
   useEffect(() => {
     if (dragging) {
@@ -92,11 +92,11 @@ export default function PuzzleGame() {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
     };
-  }, [dragging, pieces]);
+  }, [dragging, pieces, draw]);
 
   useEffect(() => {
     draw();
-  }, [debug]);
+  }, [debug, draw]);
 
   return (
     <div>
