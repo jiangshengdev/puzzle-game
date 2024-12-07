@@ -1,5 +1,3 @@
-export const SNAP_DISTANCE = 20;
-
 export function getOverlap(
   min1: number,
   max1: number,

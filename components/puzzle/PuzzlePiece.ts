@@ -1,21 +1,7 @@
 import { PuzzleDrawer } from "./PuzzleDrawer";
 import { PuzzleSnapper } from "./PuzzleSnapper";
 import { adjustGroupPosition, alignPosition, mergeGroups } from "./PuzzleGroup";
-
-export type HorizontalGapDirection = "leftConvex" | "rightConvex";
-export type VerticalGapDirection = "topConvex" | "bottomConvex";
-export type GapDirection = HorizontalGapDirection | VerticalGapDirection;
-
-export interface Gap {
-  direction: GapDirection;
-}
-
-export interface Gaps {
-  top: VerticalGapDirection | null;
-  left: HorizontalGapDirection | null;
-  bottom: VerticalGapDirection | null;
-  right: HorizontalGapDirection | null;
-}
+import { GapDirection, Gaps } from "./types";
 
 export class PuzzlePiece {
   x: number;

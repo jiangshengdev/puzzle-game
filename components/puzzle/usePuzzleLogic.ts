@@ -5,13 +5,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  Gap,
-  HorizontalGapDirection,
-  PuzzlePiece,
-  VerticalGapDirection,
-} from "./PuzzlePiece";
-import { SNAP_DISTANCE } from "../common/utils";
+import { PuzzlePiece } from "./PuzzlePiece";
+import { Gap, HorizontalGapDirection, VerticalGapDirection } from "./types";
+import { COLUMNS, ROWS, SNAP_DISTANCE } from "./constants";
 import { initializePieces } from "./puzzleSetup";
 
 export function usePuzzleLogic(image: HTMLImageElement | null) {
@@ -23,27 +19,24 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const piecesRef = useRef<PuzzlePiece[]>([]);
 
-  const rows = 4;
-  const columns = 6;
-
   const horizontalGaps: Gap[][] = useMemo(
     () =>
-      Array.from({ length: rows }, () =>
-        Array.from({ length: columns - 1 }, () => ({
+      Array.from({ length: ROWS }, () =>
+        Array.from({ length: COLUMNS - 1 }, () => ({
           direction: "leftConvex" as HorizontalGapDirection,
         })),
       ),
-    [rows, columns],
+    [],
   );
 
   const verticalGaps: Gap[][] = useMemo(
     () =>
-      Array.from({ length: columns }, () =>
-        Array.from({ length: rows - 1 }, () => ({
+      Array.from({ length: COLUMNS }, () =>
+        Array.from({ length: ROWS - 1 }, () => ({
           direction: "topConvex" as VerticalGapDirection,
         })),
       ),
-    [rows, columns],
+    [],
   );
 
   const initialize = useCallback(
@@ -53,8 +46,8 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
         image,
         horizontalGaps,
         verticalGaps,
-        rows,
-        columns,
+        ROWS,
+        COLUMNS,
         setLeftSidePieces,
         setRightSidePieces,
         setPieces,
@@ -137,7 +130,7 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
     if (dragging && selectedPiece) {
       selectedPiece.checkSnapping(
         piecesRef.current,
-        columns,
+        COLUMNS,
         SNAP_DISTANCE,
         leftSidePieces,
         rightSidePieces,
