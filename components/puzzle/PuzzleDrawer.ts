@@ -1,6 +1,7 @@
 import { PuzzlePiece } from "./PuzzlePiece";
 
 export class PuzzleDrawer {
+  static drawnGroups: Set<PuzzlePiece[]> = new Set();
   private piece: PuzzlePiece;
 
   constructor(piece: PuzzlePiece) {
@@ -8,6 +9,29 @@ export class PuzzleDrawer {
   }
 
   draw(ctx: CanvasRenderingContext2D, debug: boolean, puzzleComplete: boolean) {
+    const group = this.piece.group;
+    if (group && !PuzzleDrawer.drawnGroups.has(group)) {
+      PuzzleDrawer.drawnGroups.add(group);
+
+      const groupPath = new Path2D();
+      group.forEach((p) => {
+        p.createPaths();
+        groupPath.addPath(p.drawPath);
+      });
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetX = 5;
+      ctx.shadowOffsetY = 5;
+
+      ctx.fillStyle = "rgba(0, 0, 0, 1)";
+
+      ctx.fill(groupPath);
+
+      ctx.restore();
+    }
+
     this.piece.drawPath = new Path2D();
     this.piece.drawPath.moveTo(this.piece.x, this.piece.y);
 

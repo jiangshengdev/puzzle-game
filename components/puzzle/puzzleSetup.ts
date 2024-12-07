@@ -151,7 +151,7 @@ export function initializePieces(
   setRightSidePieces(rights);
 
   initialPieces.forEach((piece) => {
-    piece.group = null;
+    piece.group = [piece];
   });
 
   setPieces(initialPieces);

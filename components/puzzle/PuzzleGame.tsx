@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePuzzleLogic } from "./usePuzzleLogic";
 import { InputFile } from "@/components/common/InputFile";
@@ -7,6 +6,7 @@ import { Switch } from "../ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
+import { PuzzleDrawer } from "./PuzzleDrawer";
 
 export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -65,6 +65,8 @@ export default function PuzzleGame() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    PuzzleDrawer.drawnGroups.clear();
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 

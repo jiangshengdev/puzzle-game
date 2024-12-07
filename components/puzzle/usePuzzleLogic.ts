@@ -60,6 +60,7 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
 
   useEffect(() => {
     initialize(false);
+    setPuzzleComplete(false);
   }, [image, initialize]);
 
   function resetPuzzle() {
