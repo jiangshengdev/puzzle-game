@@ -16,7 +16,8 @@ export class PuzzlePiece {
   sWidth: number;
   sHeight: number;
   gaps: Gaps;
-  path: Path2D;
+  drawPath: Path2D;
+  clickPath: Path2D;
 
   private drawer: PuzzleDrawer;
   private snapper: PuzzleSnapper;
@@ -47,18 +48,20 @@ export class PuzzlePiece {
     this.sWidth = sWidth;
     this.sHeight = sHeight;
     this.gaps = gaps;
-    this.path = new Path2D();
+    this.drawPath = new Path2D();
+    this.clickPath = new Path2D();
     this.drawer = new PuzzleDrawer(this);
     this.snapper = new PuzzleSnapper(this);
   }
 
-  draw(ctx: CanvasRenderingContext2D, debug: boolean) {
-    this.drawer.draw(ctx, debug);
-  }
-
   isPointInside(px: number, py: number) {
     const ctx = document.createElement("canvas").getContext("2d")!;
-    return ctx.isPointInPath(this.path, px, py);
+    return ctx.isPointInPath(this.clickPath, px, py);
+  }
+
+  draw(ctx: CanvasRenderingContext2D, debug: boolean) {
+    this.createPaths();
+    this.drawer.draw(ctx, debug);
   }
 
   alignTo(newX: number, newY: number) {
@@ -170,6 +173,24 @@ export class PuzzlePiece {
     } else {
       path.lineTo(this.x, this.y);
     }
+  }
+
+  private createPaths() {
+    this.drawPath = new Path2D();
+    this.drawPath.moveTo(this.x, this.y);
+    this.drawTopSide(this.drawPath);
+    this.drawRightSide(this.drawPath);
+    this.drawBottomSide(this.drawPath);
+    this.drawLeftSide(this.drawPath);
+    this.drawPath.closePath();
+
+    this.clickPath = new Path2D();
+    this.clickPath.moveTo(this.x, this.y);
+    this.drawTopSide(this.clickPath);
+    this.drawRightSide(this.clickPath);
+    this.drawBottomSide(this.clickPath);
+    this.drawLeftSide(this.clickPath);
+    this.clickPath.closePath();
   }
 
   private isConvex(direction: keyof Gaps, gap: GapDirection | null): boolean {

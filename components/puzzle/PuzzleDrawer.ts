@@ -8,14 +8,14 @@ export class PuzzleDrawer {
   }
 
   draw(ctx: CanvasRenderingContext2D, debug: boolean) {
-    this.piece.path = new Path2D();
-    this.piece.path.moveTo(this.piece.x, this.piece.y);
+    this.piece.drawPath = new Path2D();
+    this.piece.drawPath.moveTo(this.piece.x, this.piece.y);
 
-    this.createPath(this.piece.path);
+    this.createPath(this.piece.drawPath);
 
     ctx.save();
     ctx.beginPath();
-    ctx.clip(this.piece.path);
+    ctx.clip(this.piece.drawPath);
 
     if (this.piece.image) {
       const bgWidth = this.piece.width * 2;
@@ -50,6 +50,10 @@ export class PuzzleDrawer {
 
     ctx.restore();
 
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.lineWidth = 1;
+    ctx.stroke(this.piece.drawPath);
+
     if (debug) {
       ctx.fillStyle = "white";
       ctx.font = "30px Arial";
@@ -78,6 +82,5 @@ export class PuzzleDrawer {
     this.piece.drawRightSide(path);
     this.piece.drawBottomSide(path);
     this.piece.drawLeftSide(path);
-    path.closePath();
   }
 }
