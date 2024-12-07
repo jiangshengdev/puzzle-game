@@ -7,7 +7,7 @@ export class PuzzleDrawer {
     this.piece = piece;
   }
 
-  draw(ctx: CanvasRenderingContext2D, debug: boolean) {
+  draw(ctx: CanvasRenderingContext2D, debug: boolean, puzzleComplete: boolean) {
     this.piece.drawPath = new Path2D();
     this.piece.drawPath.moveTo(this.piece.x, this.piece.y);
 
@@ -51,8 +51,10 @@ export class PuzzleDrawer {
     ctx.restore();
 
     ctx.strokeStyle = "rgba(0, 0, 0, 0.5)";
-    ctx.lineWidth = 1;
-    ctx.stroke(this.piece.drawPath);
+    if (!puzzleComplete) {
+      ctx.lineWidth = 1;
+      ctx.stroke(this.piece.drawPath);
+    }
 
     if (debug) {
       ctx.fillStyle = "white";

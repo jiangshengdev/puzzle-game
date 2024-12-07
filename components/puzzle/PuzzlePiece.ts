@@ -59,9 +59,9 @@ export class PuzzlePiece {
     return ctx.isPointInPath(this.clickPath, px, py);
   }
 
-  draw(ctx: CanvasRenderingContext2D, debug: boolean) {
+  draw(ctx: CanvasRenderingContext2D, debug: boolean, puzzleComplete: boolean) {
     this.createPaths();
-    this.drawer.draw(ctx, debug);
+    this.drawer.draw(ctx, debug, puzzleComplete);
   }
 
   alignTo(newX: number, newY: number) {

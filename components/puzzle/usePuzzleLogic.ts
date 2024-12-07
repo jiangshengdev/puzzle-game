@@ -18,6 +18,7 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
   const [selectedPiece, setSelectedPiece] = useState<PuzzlePiece | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const piecesRef = useRef<PuzzlePiece[]>([]);
+  const [puzzleComplete, setPuzzleComplete] = useState(false);
 
   const horizontalGaps: Gap[][] = useMemo(
     () =>
@@ -63,10 +64,12 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
 
   function resetPuzzle() {
     initialize(false);
+    setPuzzleComplete(false);
   }
 
   function shufflePuzzle() {
     initialize(true);
+    setPuzzleComplete(false);
   }
 
   function handleMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
@@ -146,10 +149,30 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
         );
       }
       setPieces([...piecesRef.current]);
+      checkPuzzleComplete();
     }
     setDragging(false);
     setSelectedPiece(null);
     setDragging(false);
+  }
+
+  function checkPuzzleComplete() {
+    const allPieces = piecesRef.current;
+    if (allPieces.length === 0) {
+      setPuzzleComplete(false);
+      return;
+    }
+    const group = allPieces[0].group;
+    if (!group) {
+      setPuzzleComplete(false);
+      return;
+    }
+    const allInSameGroup = allPieces.every((piece) => piece.group === group);
+    if (allInSameGroup && group.length === allPieces.length) {
+      setPuzzleComplete(true);
+    } else {
+      setPuzzleComplete(false);
+    }
   }
 
   return {
@@ -164,5 +187,6 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
     handleMouseUp,
     resetPuzzle,
     shufflePuzzle,
+    puzzleComplete,
   };
 }
