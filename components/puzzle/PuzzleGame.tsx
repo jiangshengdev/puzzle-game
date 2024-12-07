@@ -15,6 +15,7 @@ export default function PuzzleGame() {
   const {
     pieces,
     dragging,
+    puzzleComplete,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
@@ -68,8 +69,8 @@ export default function PuzzleGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const sortedPieces = [...pieces].sort((a, b) => a.zIndex - b.zIndex);
-    sortedPieces.forEach((piece) => piece.draw(ctx, debug));
-  }, [pieces, debug]);
+    sortedPieces.forEach((piece) => piece.draw(ctx, debug, puzzleComplete));
+  }, [pieces, debug, puzzleComplete]);
 
   useEffect(() => {
     if (dragging) {
