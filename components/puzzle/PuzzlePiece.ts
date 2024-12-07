@@ -59,24 +59,6 @@ export class PuzzlePiece {
     return ctx.isPointInPath(this.clickPath, px, py);
   }
 
-  private createPaths() {
-    this.drawPath = new Path2D();
-    this.drawPath.moveTo(this.x, this.y);
-    this.drawTopSide(this.drawPath);
-    this.drawRightSide(this.drawPath);
-    this.drawBottomSide(this.drawPath);
-    this.drawLeftSide(this.drawPath);
-    this.drawPath.closePath();
-
-    this.clickPath = new Path2D();
-    this.clickPath.moveTo(this.x, this.y);
-    this.drawTopSide(this.clickPath);
-    this.drawRightSide(this.clickPath);
-    this.drawBottomSide(this.clickPath);
-    this.drawLeftSide(this.clickPath);
-    this.clickPath.closePath();
-  }
-
   draw(ctx: CanvasRenderingContext2D, debug: boolean) {
     this.createPaths();
     this.drawer.draw(ctx, debug);
@@ -191,6 +173,24 @@ export class PuzzlePiece {
     } else {
       path.lineTo(this.x, this.y);
     }
+  }
+
+  private createPaths() {
+    this.drawPath = new Path2D();
+    this.drawPath.moveTo(this.x, this.y);
+    this.drawTopSide(this.drawPath);
+    this.drawRightSide(this.drawPath);
+    this.drawBottomSide(this.drawPath);
+    this.drawLeftSide(this.drawPath);
+    this.drawPath.closePath();
+
+    this.clickPath = new Path2D();
+    this.clickPath.moveTo(this.x, this.y);
+    this.drawTopSide(this.clickPath);
+    this.drawRightSide(this.clickPath);
+    this.drawBottomSide(this.clickPath);
+    this.drawLeftSide(this.clickPath);
+    this.clickPath.closePath();
   }
 
   private isConvex(direction: keyof Gaps, gap: GapDirection | null): boolean {
