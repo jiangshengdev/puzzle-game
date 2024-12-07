@@ -14,7 +14,7 @@ import {
 import { SNAP_DISTANCE } from "../common/utils";
 import { initializePieces } from "./puzzleSetup";
 
-export function usePuzzleGameLogic(image: HTMLImageElement | null) {
+export function usePuzzleLogic(image: HTMLImageElement | null) {
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
   const [leftSidePieces, setLeftSidePieces] = useState<number[]>([]);
   const [rightSidePieces, setRightSidePieces] = useState<number[]>([]);

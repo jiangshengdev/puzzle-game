@@ -7,6 +7,76 @@ import {
 } from "./PuzzlePiece";
 import React from "react";
 
+function calculateCropDimensions(
+  image: HTMLImageElement,
+  rows: number,
+  columns: number,
+): { cropWidth: number; cropHeight: number } {
+  const gridAspectRatio = columns / rows;
+  const imageAspectRatio = image.width / image.height;
+  let cropWidth: number;
+  let cropHeight: number;
+
+  if (imageAspectRatio > gridAspectRatio) {
+    cropHeight = image.height;
+    cropWidth = cropHeight * gridAspectRatio;
+  } else {
+    cropWidth = image.width;
+    cropHeight = cropWidth / gridAspectRatio;
+  }
+
+  return { cropWidth, cropHeight };
+}
+
+function createPuzzlePiece(
+  row: number,
+  col: number,
+  columns: number,
+  rows: number,
+  image: HTMLImageElement,
+  startX: number,
+  startY: number,
+  pieceWidth: number,
+  pieceHeight: number,
+  horizontalGaps: Gap[][],
+  verticalGaps: Gap[][],
+): PuzzlePiece {
+  const number = row * columns + col + 1;
+
+  const gaps: Gaps = {
+    top:
+      row > 0
+        ? (verticalGaps[col][row - 1]?.direction as VerticalGapDirection)
+        : null,
+    bottom:
+      row < rows - 1
+        ? (verticalGaps[col][row]?.direction as VerticalGapDirection)
+        : null,
+    left:
+      col > 0
+        ? (horizontalGaps[row][col - 1]?.direction as HorizontalGapDirection)
+        : null,
+    right:
+      col < columns - 1
+        ? (horizontalGaps[row][col]?.direction as HorizontalGapDirection)
+        : null,
+  };
+
+  return new PuzzlePiece(
+    0,
+    0,
+    100,
+    100,
+    number,
+    image,
+    startX + col * pieceWidth,
+    startY + row * pieceHeight,
+    pieceWidth,
+    pieceHeight,
+    gaps,
+  );
+}
+
 export function initializePieces(
   randomizePositions: boolean,
   image: HTMLImageElement | null,
@@ -30,19 +100,11 @@ export function initializePieces(
   const centerX = image.width / 2;
   const centerY = image.height / 2;
 
-  const gridAspectRatio = columns / rows;
-  const imageAspectRatio = image.width / image.height;
-
-  let cropWidth: number;
-  let cropHeight: number;
-
-  if (imageAspectRatio > gridAspectRatio) {
-    cropHeight = image.height;
-    cropWidth = cropHeight * gridAspectRatio;
-  } else {
-    cropWidth = image.width;
-    cropHeight = cropWidth / gridAspectRatio;
-  }
+  const { cropWidth, cropHeight } = calculateCropDimensions(
+    image,
+    rows,
+    columns,
+  );
 
   const startX = centerX - cropWidth / 2;
   const startY = centerY - cropHeight / 2;
@@ -52,40 +114,18 @@ export function initializePieces(
 
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < columns; col++) {
-      const number = row * columns + col + 1;
-
-      const gaps: Gaps = {
-        top:
-          row > 0
-            ? (verticalGaps[col][row - 1]?.direction as VerticalGapDirection)
-            : null,
-        bottom:
-          row < rows - 1
-            ? (verticalGaps[col][row]?.direction as VerticalGapDirection)
-            : null,
-        left:
-          col > 0
-            ? (horizontalGaps[row][col - 1]
-                ?.direction as HorizontalGapDirection)
-            : null,
-        right:
-          col < columns - 1
-            ? (horizontalGaps[row][col]?.direction as HorizontalGapDirection)
-            : null,
-      };
-
-      const piece = new PuzzlePiece(
-        spacingX * (col + 1) - 50,
-        spacingY * (row + 1) - 50,
-        100,
-        100,
-        number,
+      const piece = createPuzzlePiece(
+        row,
+        col,
+        columns,
+        rows,
         image,
-        startX + col * pieceWidth,
-        startY + row * pieceHeight,
+        startX,
+        startY,
         pieceWidth,
         pieceHeight,
-        gaps,
+        horizontalGaps,
+        verticalGaps,
       );
 
       if (randomizePositions) {

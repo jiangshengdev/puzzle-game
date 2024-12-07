@@ -160,75 +160,22 @@ export class PuzzlePiece {
       adjacentPieces.forEach((otherPiece) => {
         if (otherPiece === piece) return;
 
-        const numberDifference = Math.abs(piece.number - otherPiece.number);
-
-        if (
-          Math.abs(piece.y - (otherPiece.y + otherPiece.height)) <
-            SNAP_DISTANCE &&
-          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-          numberDifference === columns &&
-          piece.number > otherPiece.number
-        ) {
-          if (areAligned(piece, otherPiece, "x")) {
-            const offsetY = otherPiece.y + otherPiece.height;
-            this.snapTo(piece, 0, offsetY - piece.y);
-            this.align(piece, otherPiece, "x");
-            this.mergeWith(otherPiece);
-          }
-        }
-
-        if (
-          Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
-          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-          numberDifference === columns &&
-          piece.number < otherPiece.number
-        ) {
-          if (areAligned(piece, otherPiece, "x")) {
-            const offsetY = otherPiece.y - piece.height;
-            this.snapTo(piece, 0, offsetY - piece.y);
-            this.align(piece, otherPiece, "x");
-            this.mergeWith(otherPiece);
-          }
-        }
-
-        if (
-          Math.abs(piece.x - (otherPiece.x + otherPiece.width)) <
-            SNAP_DISTANCE &&
-          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
-          piece.number === otherPiece.number + 1 &&
-          !(
-            (rightSidePieces.includes(otherPiece.number) &&
-              leftSidePieces.includes(piece.number)) ||
-            (rightSidePieces.includes(piece.number) &&
-              leftSidePieces.includes(otherPiece.number))
-          )
-        ) {
-          if (areAligned(piece, otherPiece, "y")) {
-            const offsetX = otherPiece.x + otherPiece.width;
-            this.snapTo(piece, offsetX - piece.x, 0);
-            this.align(piece, otherPiece, "y");
-            this.mergeWith(otherPiece);
-          }
-        }
-
-        if (
-          Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
-          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
-          piece.number === otherPiece.number - 1 &&
-          !(
-            (rightSidePieces.includes(otherPiece.number) &&
-              leftSidePieces.includes(piece.number)) ||
-            (rightSidePieces.includes(piece.number) &&
-              leftSidePieces.includes(otherPiece.number))
-          )
-        ) {
-          if (areAligned(piece, otherPiece, "y")) {
-            const offsetX = otherPiece.x - piece.width;
-            this.snapTo(piece, offsetX - piece.x, 0);
-            this.align(piece, otherPiece, "y");
-            this.mergeWith(otherPiece);
-          }
-        }
+        this.handleTopSnapping(piece, otherPiece, SNAP_DISTANCE, columns);
+        this.handleBottomSnapping(piece, otherPiece, SNAP_DISTANCE, columns);
+        this.handleLeftSnapping(
+          piece,
+          otherPiece,
+          SNAP_DISTANCE,
+          leftSidePieces,
+          rightSidePieces,
+        );
+        this.handleRightSnapping(
+          piece,
+          otherPiece,
+          SNAP_DISTANCE,
+          leftSidePieces,
+          rightSidePieces,
+        );
       });
     });
   }
@@ -250,98 +197,203 @@ export class PuzzlePiece {
     alignPosition(piece, otherPiece, axis);
   }
 
+  private handleTopSnapping(
+    piece: PuzzlePiece,
+    otherPiece: PuzzlePiece,
+    SNAP_DISTANCE: number,
+    columns: number,
+  ) {
+    const numberDifference = Math.abs(piece.number - otherPiece.number);
+
+    if (
+      Math.abs(piece.y - (otherPiece.y + otherPiece.height)) < SNAP_DISTANCE &&
+      Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
+      numberDifference === columns &&
+      piece.number > otherPiece.number
+    ) {
+      if (areAligned(piece, otherPiece, "x")) {
+        const offsetY = otherPiece.y + otherPiece.height;
+        this.snapTo(piece, 0, offsetY - piece.y);
+        this.align(piece, otherPiece, "x");
+        this.mergeWith(otherPiece);
+      }
+    }
+  }
+
+  private handleBottomSnapping(
+    piece: PuzzlePiece,
+    otherPiece: PuzzlePiece,
+    SNAP_DISTANCE: number,
+    columns: number,
+  ) {
+    const numberDifference = Math.abs(piece.number - otherPiece.number);
+
+    if (
+      Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
+      Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
+      numberDifference === columns &&
+      piece.number < otherPiece.number
+    ) {
+      if (areAligned(piece, otherPiece, "x")) {
+        const offsetY = otherPiece.y - piece.height;
+        this.snapTo(piece, 0, offsetY - piece.y);
+        this.align(piece, otherPiece, "x");
+        this.mergeWith(otherPiece);
+      }
+    }
+  }
+
+  private handleLeftSnapping(
+    piece: PuzzlePiece,
+    otherPiece: PuzzlePiece,
+    SNAP_DISTANCE: number,
+    leftSidePieces: number[],
+    rightSidePieces: number[],
+  ) {
+    if (
+      Math.abs(piece.x - (otherPiece.x + otherPiece.width)) < SNAP_DISTANCE &&
+      Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
+      piece.number === otherPiece.number + 1 &&
+      !(
+        (rightSidePieces.includes(otherPiece.number) &&
+          leftSidePieces.includes(piece.number)) ||
+        (rightSidePieces.includes(piece.number) &&
+          leftSidePieces.includes(otherPiece.number))
+      )
+    ) {
+      if (areAligned(piece, otherPiece, "y")) {
+        const offsetX = otherPiece.x + otherPiece.width;
+        this.snapTo(piece, offsetX - piece.x, 0);
+        this.align(piece, otherPiece, "y");
+        this.mergeWith(otherPiece);
+      }
+    }
+  }
+
+  private handleRightSnapping(
+    piece: PuzzlePiece,
+    otherPiece: PuzzlePiece,
+    SNAP_DISTANCE: number,
+    leftSidePieces: number[],
+    rightSidePieces: number[],
+  ) {
+    if (
+      Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
+      Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
+      piece.number === otherPiece.number - 1 &&
+      !(
+        (rightSidePieces.includes(otherPiece.number) &&
+          leftSidePieces.includes(piece.number)) ||
+        (rightSidePieces.includes(piece.number) &&
+          leftSidePieces.includes(otherPiece.number))
+      )
+    ) {
+      if (areAligned(piece, otherPiece, "y")) {
+        const offsetX = otherPiece.x - piece.width;
+        this.snapTo(piece, offsetX - piece.x, 0);
+        this.align(piece, otherPiece, "y");
+        this.mergeWith(otherPiece);
+      }
+    }
+  }
+
   private createPath(path: Path2D) {
-    this.drawSide(path, "top");
-    this.drawSide(path, "right");
-    this.drawSide(path, "bottom");
-    this.drawSide(path, "left");
+    this.drawTopSide(path);
+    this.drawRightSide(path);
+    this.drawBottomSide(path);
+    this.drawLeftSide(path);
     path.closePath();
   }
 
-  private drawSide(path: Path2D, side: "top" | "right" | "bottom" | "left") {
-    const gap = this.gaps[side];
+  private drawTopSide(path: Path2D) {
+    const gap = this.gaps["top"];
     if (gap) {
-      const convex = this.isConvex(side, gap);
-      let midX, midY;
-      const r =
-        side === "top" || side === "bottom" ? this.width / 6 : this.height / 6;
-      switch (side) {
-        case "top":
-          midX = this.x + this.width / 2;
-          path.lineTo(midX - r, this.y);
-          path.lineTo(this.x + this.width / 3, this.y);
-          path.arc(
-            midX,
-            convex ? this.y - r : this.y + r,
-            r,
-            !convex ? 0 : Math.PI,
-            !convex ? Math.PI : 0,
-            !convex,
-          );
-          path.lineTo(this.x + (2 * this.width) / 3, this.y);
-          path.lineTo(this.x + this.width, this.y);
-          break;
-        case "right":
-          midY = this.y + this.height / 2;
-          path.lineTo(this.x + this.width, this.y);
-          path.lineTo(this.x + this.width, midY - r);
-          path.arc(
-            convex ? this.x + this.width + r : this.x + this.width - r,
-            midY,
-            r,
-            !convex ? -Math.PI / 2 : Math.PI / 2,
-            !convex ? Math.PI / 2 : -Math.PI / 2,
-            !convex,
-          );
-          path.lineTo(this.x + this.width, midY + r);
-          path.lineTo(this.x + this.width, this.y + this.height);
-          break;
-        case "bottom":
-          midX = this.x + this.width / 2;
-          path.lineTo(this.x + this.width, this.y + this.height);
-          path.lineTo(this.x + (2 * this.width) / 3, this.y + this.height);
-          path.arc(
-            midX,
-            convex ? this.y + this.height + r : this.y + this.height - r,
-            r,
-            convex ? Math.PI : 0,
-            convex ? 0 : Math.PI,
-            !convex,
-          );
-          path.lineTo(this.x + this.width / 3, this.y + this.height);
-          path.lineTo(this.x, this.y + this.height);
-          break;
-        case "left":
-          midY = this.y + this.height / 2;
-          path.lineTo(this.x, this.y + this.height);
-          path.lineTo(this.x, this.y + (2 * this.height) / 3);
-          path.arc(
-            convex ? this.x - r : this.x + r,
-            midY,
-            r,
-            convex ? Math.PI / 2 : -Math.PI / 2,
-            convex ? -Math.PI / 2 : Math.PI / 2,
-            !convex,
-          );
-          path.lineTo(this.x, this.y + this.height / 3);
-          path.lineTo(this.x, this.y);
-          break;
-      }
+      const convex = this.isConvex("top", gap);
+      const r = this.width / 6;
+      const midX = this.x + this.width / 2;
+      path.lineTo(midX - r, this.y);
+      path.lineTo(this.x + this.width / 3, this.y);
+      path.arc(
+        midX,
+        convex ? this.y - r : this.y + r,
+        r,
+        !convex ? 0 : Math.PI,
+        !convex ? Math.PI : 0,
+        !convex,
+      );
+      path.lineTo(this.x + (2 * this.width) / 3, this.y);
+      path.lineTo(this.x + this.width, this.y);
     } else {
-      switch (side) {
-        case "top":
-          path.lineTo(this.x + this.width, this.y);
-          break;
-        case "right":
-          path.lineTo(this.x + this.width, this.y + this.height);
-          break;
-        case "bottom":
-          path.lineTo(this.x, this.y + this.height);
-          break;
-        case "left":
-          path.lineTo(this.x, this.y);
-          break;
-      }
+      path.lineTo(this.x + this.width, this.y);
+    }
+  }
+
+  private drawRightSide(path: Path2D) {
+    const gap = this.gaps["right"];
+    if (gap) {
+      const convex = this.isConvex("right", gap);
+      const r = this.height / 6;
+      const midY = this.y + this.height / 2;
+      path.lineTo(this.x + this.width, this.y);
+      path.lineTo(this.x + this.width, midY - r);
+      path.arc(
+        convex ? this.x + this.width + r : this.x + this.width - r,
+        midY,
+        r,
+        !convex ? -Math.PI / 2 : Math.PI / 2,
+        !convex ? Math.PI / 2 : -Math.PI / 2,
+        !convex,
+      );
+      path.lineTo(this.x + this.width, midY + r);
+      path.lineTo(this.x + this.width, this.y + this.height);
+    } else {
+      path.lineTo(this.x + this.width, this.y + this.height);
+    }
+  }
+
+  private drawBottomSide(path: Path2D) {
+    const gap = this.gaps["bottom"];
+    if (gap) {
+      const convex = this.isConvex("bottom", gap);
+      const r = this.width / 6;
+      const midX = this.x + this.width / 2;
+      path.lineTo(this.x + this.width, this.y + this.height);
+      path.lineTo(this.x + (2 * this.width) / 3, this.y + this.height);
+      path.arc(
+        midX,
+        convex ? this.y + this.height + r : this.y + this.height - r,
+        r,
+        convex ? Math.PI : 0,
+        convex ? 0 : Math.PI,
+        !convex,
+      );
+      path.lineTo(this.x + this.width / 3, this.y + this.height);
+      path.lineTo(this.x, this.y + this.height);
+    } else {
+      path.lineTo(this.x, this.y + this.height);
+    }
+  }
+
+  private drawLeftSide(path: Path2D) {
+    const gap = this.gaps["left"];
+    if (gap) {
+      const convex = this.isConvex("left", gap);
+      const r = this.height / 6;
+      const midY = this.y + this.height / 2;
+      path.lineTo(this.x, this.y + this.height);
+      path.lineTo(this.x, this.y + (2 * this.height) / 3);
+      path.arc(
+        convex ? this.x - r : this.x + r,
+        midY,
+        r,
+        convex ? Math.PI / 2 : -Math.PI / 2,
+        convex ? -Math.PI / 2 : Math.PI / 2,
+        !convex,
+      );
+      path.lineTo(this.x, this.y + this.height / 3);
+      path.lineTo(this.x, this.y);
+    } else {
+      path.lineTo(this.x, this.y);
     }
   }
 
