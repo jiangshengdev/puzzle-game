@@ -11,7 +11,7 @@ import {
   PuzzlePiece,
   VerticalGapDirection,
 } from "./PuzzlePiece";
-import { SNAP_DISTANCE } from "./utils";
+import { SNAP_DISTANCE } from "../common/utils";
 import { initializePieces } from "./puzzleSetup";
 
 export function usePuzzleGameLogic(image: HTMLImageElement | null) {
