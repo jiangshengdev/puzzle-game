@@ -1,6 +1,5 @@
 import { PuzzleDrawer } from "./PuzzleDrawer";
 import { PuzzleSnapper } from "./PuzzleSnapper";
-import { adjustGroupPosition, alignPosition, mergeGroups } from "./PuzzleGroup";
 import { GapDirection, Gaps } from "./types";
 
 export class PuzzlePiece {
@@ -81,23 +80,6 @@ export class PuzzlePiece {
       leftSidePieces,
       rightSidePieces,
     );
-  }
-
-  snapTo(piece: PuzzlePiece, offsetX: number, offsetY: number) {
-    if (piece.group) {
-      adjustGroupPosition(piece.group, offsetX, offsetY);
-    } else {
-      piece.x += offsetX;
-      piece.y += offsetY;
-    }
-  }
-
-  mergeWith(otherPiece: PuzzlePiece) {
-    mergeGroups(this, otherPiece);
-  }
-
-  align(piece: PuzzlePiece, otherPiece: PuzzlePiece, axis: "x" | "y") {
-    alignPosition(piece, otherPiece, axis);
   }
 
   drawTopSide(path: Path2D) {

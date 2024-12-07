@@ -7,7 +7,7 @@ import {
 } from "./PuzzleGroup";
 
 export class PuzzleSnapper {
-  private piece: PuzzlePiece;
+  private readonly piece: PuzzlePiece;
 
   constructor(piece: PuzzlePiece) {
     this.piece = piece;
