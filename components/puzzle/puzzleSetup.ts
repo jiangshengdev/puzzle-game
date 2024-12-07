@@ -2,10 +2,11 @@ import {
   Gap,
   Gaps,
   HorizontalGapDirection,
-  PuzzlePiece,
   VerticalGapDirection,
-} from "./PuzzlePiece";
+} from "./types";
+import { PuzzlePiece } from "./PuzzlePiece";
 import React from "react";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
 function calculateCropDimensions(
   image: HTMLImageElement,
@@ -92,10 +93,8 @@ export function initializePieces(
   if (!image) return;
 
   const initialPieces: PuzzlePiece[] = [];
-  const canvasWidth = 800;
-  const canvasHeight = 600;
-  const spacingX = canvasWidth / (columns + 1);
-  const spacingY = canvasHeight / (rows + 1);
+  const spacingX = CANVAS_WIDTH / (columns + 1);
+  const spacingY = CANVAS_HEIGHT / (rows + 1);
 
   const centerX = image.width / 2;
   const centerY = image.height / 2;
@@ -129,8 +128,8 @@ export function initializePieces(
       );
 
       if (randomizePositions) {
-        piece.x = Math.random() * (canvasWidth - piece.width);
-        piece.y = Math.random() * (canvasHeight - piece.height);
+        piece.x = Math.random() * (CANVAS_WIDTH - piece.width);
+        piece.y = Math.random() * (CANVAS_HEIGHT - piece.height);
       } else {
         piece.x = spacingX * (col + 1) - 50;
         piece.y = spacingY * (row + 1) - 50;

@@ -1,5 +1,5 @@
 import { PuzzlePiece } from "./PuzzlePiece";
-import { getOverlap } from "@/components/common/utils";
+import { getOverlap } from "@/components/puzzle/utils";
 
 export function adjustGroupPosition(
   group: PuzzlePiece[],

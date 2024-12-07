@@ -6,6 +6,7 @@ import { InputFile } from "@/components/common/InputFile";
 import { Switch } from "../ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
 export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -47,10 +48,8 @@ export default function PuzzleGame() {
     if (!ctx) return;
 
     const ratio = window.devicePixelRatio || 1;
-    const width = canvas.offsetWidth;
-    const height = canvas.offsetHeight;
-    canvas.width = width * ratio;
-    canvas.height = height * ratio;
+    canvas.width = CANVAS_WIDTH * ratio;
+    canvas.height = CANVAS_HEIGHT * ratio;
     ctx.scale(ratio, ratio);
   }, []);
 
@@ -111,7 +110,11 @@ export default function PuzzleGame() {
       </div>
       <canvas
         ref={canvasRef}
-        style={{ width: "800px", height: "600px", userSelect: "none" }}
+        style={{
+          width: `${CANVAS_WIDTH}px`,
+          height: `${CANVAS_HEIGHT}px`,
+          userSelect: "none",
+        }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

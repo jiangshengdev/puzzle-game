@@ -1,24 +1,6 @@
-import {
-  adjustGroupPosition,
-  alignPosition,
-  areAligned,
-  mergeGroups,
-} from "./PuzzleGroup";
-
-export type HorizontalGapDirection = "leftConvex" | "rightConvex";
-export type VerticalGapDirection = "topConvex" | "bottomConvex";
-export type GapDirection = HorizontalGapDirection | VerticalGapDirection;
-
-export interface Gap {
-  direction: GapDirection;
-}
-
-export interface Gaps {
-  top: VerticalGapDirection | null;
-  left: HorizontalGapDirection | null;
-  bottom: VerticalGapDirection | null;
-  right: HorizontalGapDirection | null;
-}
+import { PuzzleDrawer } from "./PuzzleDrawer";
+import { PuzzleSnapper } from "./PuzzleSnapper";
+import { GapDirection, Gaps } from "./types";
 
 export class PuzzlePiece {
   x: number;
@@ -35,6 +17,9 @@ export class PuzzlePiece {
   sHeight: number;
   gaps: Gaps;
   path: Path2D;
+
+  private drawer: PuzzleDrawer;
+  private snapper: PuzzleSnapper;
 
   constructor(
     x: number,
@@ -63,67 +48,12 @@ export class PuzzlePiece {
     this.sHeight = sHeight;
     this.gaps = gaps;
     this.path = new Path2D();
+    this.drawer = new PuzzleDrawer(this);
+    this.snapper = new PuzzleSnapper(this);
   }
 
   draw(ctx: CanvasRenderingContext2D, debug: boolean) {
-    this.path = new Path2D();
-    this.path.moveTo(this.x, this.y);
-
-    this.createPath(this.path);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.clip(this.path);
-
-    if (this.image) {
-      const bgWidth = this.width * 2;
-      const bgHeight = this.height * 2;
-
-      const bgX = this.x + this.width / 2 - bgWidth / 2;
-      const bgY = this.y + this.height / 2 - bgHeight / 2;
-
-      const bgSX = this.sx - this.sWidth / 2;
-      const bgSY = this.sy - this.sHeight / 2;
-
-      ctx.drawImage(
-        this.image,
-        bgSX,
-        bgSY,
-        this.sWidth * 2,
-        this.sHeight * 2,
-        bgX,
-        bgY,
-        bgWidth,
-        bgHeight,
-      );
-    } else {
-      ctx.fillStyle = "gray";
-      ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-
-    ctx.restore();
-
-    if (debug) {
-      ctx.fillStyle = "white";
-      ctx.font = "30px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(
-        this.number.toString(),
-        this.x + this.width / 2,
-        this.y + this.height / 2,
-      );
-
-      ctx.fillStyle = "white";
-      ctx.font = "20px Arial";
-      ctx.textAlign = "right";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(
-        this.zIndex.toString(),
-        this.x + this.width - 5,
-        this.y + this.height - 5,
-      );
-    }
+    this.drawer.draw(ctx, debug);
   }
 
   isPointInside(px: number, py: number) {
@@ -139,173 +69,18 @@ export class PuzzlePiece {
   checkSnapping(
     pieces: PuzzlePiece[],
     columns: number,
-    SNAP_DISTANCE: number,
     leftSidePieces: number[],
     rightSidePieces: number[],
   ) {
-    const piecesToCheck = this.group ? this.group : [this];
-
-    piecesToCheck.forEach((piece) => {
-      const adjacentNumbers = [
-        piece.number - 1,
-        piece.number + 1,
-        piece.number - columns,
-        piece.number + columns,
-      ];
-
-      const adjacentPieces = pieces.filter((otherPiece) =>
-        adjacentNumbers.includes(otherPiece.number),
-      );
-
-      adjacentPieces.forEach((otherPiece) => {
-        if (otherPiece === piece) return;
-
-        this.handleTopSnapping(piece, otherPiece, SNAP_DISTANCE, columns);
-        this.handleBottomSnapping(piece, otherPiece, SNAP_DISTANCE, columns);
-        this.handleLeftSnapping(
-          piece,
-          otherPiece,
-          SNAP_DISTANCE,
-          leftSidePieces,
-          rightSidePieces,
-        );
-        this.handleRightSnapping(
-          piece,
-          otherPiece,
-          SNAP_DISTANCE,
-          leftSidePieces,
-          rightSidePieces,
-        );
-      });
-    });
+    this.snapper.checkSnapping(
+      pieces,
+      columns,
+      leftSidePieces,
+      rightSidePieces,
+    );
   }
 
-  snapTo(piece: PuzzlePiece, offsetX: number, offsetY: number) {
-    if (piece.group) {
-      adjustGroupPosition(piece.group, offsetX, offsetY);
-    } else {
-      piece.x += offsetX;
-      piece.y += offsetY;
-    }
-  }
-
-  mergeWith(otherPiece: PuzzlePiece) {
-    mergeGroups(this, otherPiece);
-  }
-
-  align(piece: PuzzlePiece, otherPiece: PuzzlePiece, axis: "x" | "y") {
-    alignPosition(piece, otherPiece, axis);
-  }
-
-  private handleTopSnapping(
-    piece: PuzzlePiece,
-    otherPiece: PuzzlePiece,
-    SNAP_DISTANCE: number,
-    columns: number,
-  ) {
-    const numberDifference = Math.abs(piece.number - otherPiece.number);
-
-    if (
-      Math.abs(piece.y - (otherPiece.y + otherPiece.height)) < SNAP_DISTANCE &&
-      Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-      numberDifference === columns &&
-      piece.number > otherPiece.number
-    ) {
-      if (areAligned(piece, otherPiece, "x")) {
-        const offsetY = otherPiece.y + otherPiece.height;
-        this.snapTo(piece, 0, offsetY - piece.y);
-        this.align(piece, otherPiece, "x");
-        this.mergeWith(otherPiece);
-      }
-    }
-  }
-
-  private handleBottomSnapping(
-    piece: PuzzlePiece,
-    otherPiece: PuzzlePiece,
-    SNAP_DISTANCE: number,
-    columns: number,
-  ) {
-    const numberDifference = Math.abs(piece.number - otherPiece.number);
-
-    if (
-      Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
-      Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-      numberDifference === columns &&
-      piece.number < otherPiece.number
-    ) {
-      if (areAligned(piece, otherPiece, "x")) {
-        const offsetY = otherPiece.y - piece.height;
-        this.snapTo(piece, 0, offsetY - piece.y);
-        this.align(piece, otherPiece, "x");
-        this.mergeWith(otherPiece);
-      }
-    }
-  }
-
-  private handleLeftSnapping(
-    piece: PuzzlePiece,
-    otherPiece: PuzzlePiece,
-    SNAP_DISTANCE: number,
-    leftSidePieces: number[],
-    rightSidePieces: number[],
-  ) {
-    if (
-      Math.abs(piece.x - (otherPiece.x + otherPiece.width)) < SNAP_DISTANCE &&
-      Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
-      piece.number === otherPiece.number + 1 &&
-      !(
-        (rightSidePieces.includes(otherPiece.number) &&
-          leftSidePieces.includes(piece.number)) ||
-        (rightSidePieces.includes(piece.number) &&
-          leftSidePieces.includes(otherPiece.number))
-      )
-    ) {
-      if (areAligned(piece, otherPiece, "y")) {
-        const offsetX = otherPiece.x + otherPiece.width;
-        this.snapTo(piece, offsetX - piece.x, 0);
-        this.align(piece, otherPiece, "y");
-        this.mergeWith(otherPiece);
-      }
-    }
-  }
-
-  private handleRightSnapping(
-    piece: PuzzlePiece,
-    otherPiece: PuzzlePiece,
-    SNAP_DISTANCE: number,
-    leftSidePieces: number[],
-    rightSidePieces: number[],
-  ) {
-    if (
-      Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
-      Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
-      piece.number === otherPiece.number - 1 &&
-      !(
-        (rightSidePieces.includes(otherPiece.number) &&
-          leftSidePieces.includes(piece.number)) ||
-        (rightSidePieces.includes(piece.number) &&
-          leftSidePieces.includes(otherPiece.number))
-      )
-    ) {
-      if (areAligned(piece, otherPiece, "y")) {
-        const offsetX = otherPiece.x - piece.width;
-        this.snapTo(piece, offsetX - piece.x, 0);
-        this.align(piece, otherPiece, "y");
-        this.mergeWith(otherPiece);
-      }
-    }
-  }
-
-  private createPath(path: Path2D) {
-    this.drawTopSide(path);
-    this.drawRightSide(path);
-    this.drawBottomSide(path);
-    this.drawLeftSide(path);
-    path.closePath();
-  }
-
-  private drawTopSide(path: Path2D) {
+  drawTopSide(path: Path2D) {
     const gap = this.gaps["top"];
     if (gap) {
       const convex = this.isConvex("top", gap);
@@ -328,7 +103,7 @@ export class PuzzlePiece {
     }
   }
 
-  private drawRightSide(path: Path2D) {
+  drawRightSide(path: Path2D) {
     const gap = this.gaps["right"];
     if (gap) {
       const convex = this.isConvex("right", gap);
@@ -351,7 +126,7 @@ export class PuzzlePiece {
     }
   }
 
-  private drawBottomSide(path: Path2D) {
+  drawBottomSide(path: Path2D) {
     const gap = this.gaps["bottom"];
     if (gap) {
       const convex = this.isConvex("bottom", gap);
@@ -374,7 +149,7 @@ export class PuzzlePiece {
     }
   }
 
-  private drawLeftSide(path: Path2D) {
+  drawLeftSide(path: Path2D) {
     const gap = this.gaps["left"];
     if (gap) {
       const convex = this.isConvex("left", gap);
