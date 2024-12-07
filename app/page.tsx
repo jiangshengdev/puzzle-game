@@ -1,4 +1,4 @@
-import PuzzleGame from "@/components/PuzzleGame";
+import PuzzleGame from "@/components/puzzle/PuzzleGame";
 
 export default function Home() {
   return (

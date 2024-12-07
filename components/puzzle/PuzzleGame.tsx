@@ -2,8 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePuzzleGameLogic } from "./usePuzzleGameLogic";
-import { InputFile } from "@/components/InputFile";
-import { Switch } from "./ui/switch";
+import { InputFile } from "@/components/puzzle/InputFile";
+import { Switch } from "../ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
