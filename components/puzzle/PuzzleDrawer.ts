@@ -50,6 +50,10 @@ export class PuzzleDrawer {
 
     ctx.restore();
 
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.lineWidth = 1;
+    ctx.stroke(this.piece.path);
+
     if (debug) {
       ctx.fillStyle = "white";
       ctx.font = "30px Arial";
