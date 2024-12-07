@@ -13,51 +13,34 @@ export function adjustGroupPosition(
   });
 }
 
-export function alignHorizontally(
+export function alignPosition(
   movedPiece: PuzzlePiece,
   targetPiece: PuzzlePiece,
+  axis: "x" | "y",
 ) {
-  const offsetX = targetPiece.x;
-  const dx = offsetX - movedPiece.x;
+  const offset = targetPiece[axis];
+  const d = offset - movedPiece[axis];
   if (movedPiece.group) {
-    adjustGroupPosition(movedPiece.group, dx, 0);
+    adjustGroupPosition(
+      movedPiece.group,
+      axis === "x" ? d : 0,
+      axis === "y" ? d : 0,
+    );
   } else {
-    movedPiece.x = offsetX;
+    movedPiece[axis] = offset;
   }
 }
 
-export function alignVertically(
-  movedPiece: PuzzlePiece,
-  targetPiece: PuzzlePiece,
-) {
-  const offsetY = targetPiece.y;
-  const dy = offsetY - movedPiece.y;
-  if (movedPiece.group) {
-    adjustGroupPosition(movedPiece.group, 0, dy);
-  } else {
-    movedPiece.y = offsetY;
-  }
-}
-
-export function areAlignedVertically(pieceA: PuzzlePiece, pieceB: PuzzlePiece) {
-  const overlap = getOverlap(
-    pieceA.y,
-    pieceA.y + pieceA.height,
-    pieceB.y,
-    pieceB.y + pieceB.height,
-  );
-  return overlap > 0;
-}
-
-export function areAlignedHorizontally(
+export function areAligned(
   pieceA: PuzzlePiece,
   pieceB: PuzzlePiece,
+  axis: "x" | "y",
 ) {
   const overlap = getOverlap(
-    pieceA.x,
-    pieceA.x + pieceA.width,
-    pieceB.x,
-    pieceB.x + pieceB.width,
+    pieceA[axis],
+    pieceA[axis] + pieceA[axis === "x" ? "width" : "height"],
+    pieceB[axis],
+    pieceB[axis] + pieceB[axis === "x" ? "width" : "height"],
   );
   return overlap > 0;
 }

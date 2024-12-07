@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Gap,
   Gaps,
@@ -8,10 +14,8 @@ import {
 } from "./PuzzlePiece";
 import {
   adjustGroupPosition,
-  alignHorizontally,
-  alignVertically,
-  areAlignedHorizontally,
-  areAlignedVertically,
+  alignPosition,
+  areAligned,
   mergeGroups,
   SNAP_DISTANCE,
 } from "./utils";
@@ -193,14 +197,14 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           numberDifference === columns &&
           piece.number > otherPiece.number
         ) {
-          if (areAlignedHorizontally(piece, otherPiece)) {
+          if (areAligned(piece, otherPiece, "x")) {
             const offsetY = otherPiece.y + otherPiece.height;
             if (piece.group) {
               adjustGroupPosition(piece.group, 0, offsetY - piece.y);
             } else {
               piece.y = offsetY;
             }
-            alignHorizontally(piece, otherPiece);
+            alignPosition(piece, otherPiece, "x");
             mergeGroups(piece, otherPiece);
           }
         }
@@ -211,14 +215,14 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
           numberDifference === columns &&
           piece.number < otherPiece.number
         ) {
-          if (areAlignedHorizontally(piece, otherPiece)) {
+          if (areAligned(piece, otherPiece, "x")) {
             const offsetY = otherPiece.y - piece.height;
             if (piece.group) {
               adjustGroupPosition(piece.group, 0, offsetY - piece.y);
             } else {
               piece.y = offsetY;
             }
-            alignHorizontally(piece, otherPiece);
+            alignPosition(piece, otherPiece, "x");
             mergeGroups(piece, otherPiece);
           }
         }
@@ -235,14 +239,14 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
               leftSidePieces.includes(otherPiece.number))
           )
         ) {
-          if (areAlignedVertically(piece, otherPiece)) {
+          if (areAligned(piece, otherPiece, "y")) {
             const offsetX = otherPiece.x + otherPiece.width;
             if (piece.group) {
               adjustGroupPosition(piece.group, offsetX - piece.x, 0);
             } else {
               piece.x = offsetX;
             }
-            alignVertically(piece, otherPiece);
+            alignPosition(piece, otherPiece, "y");
             mergeGroups(piece, otherPiece);
           }
         }
@@ -258,14 +262,14 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
               leftSidePieces.includes(otherPiece.number))
           )
         ) {
-          if (areAlignedVertically(piece, otherPiece)) {
+          if (areAligned(piece, otherPiece, "y")) {
             const offsetX = otherPiece.x - piece.width;
             if (piece.group) {
               adjustGroupPosition(piece.group, offsetX - piece.x, 0);
             } else {
               piece.x = offsetX;
             }
-            alignVertically(piece, otherPiece);
+            alignPosition(piece, otherPiece, "y");
             mergeGroups(piece, otherPiece);
           }
         }
