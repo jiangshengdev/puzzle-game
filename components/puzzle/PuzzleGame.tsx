@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { usePuzzleGameLogic } from "./usePuzzleGameLogic";
-import { InputFile } from "@/components/ui/InputFile";
-import { Switch } from "./ui/switch";
+import { usePuzzleLogic } from "./usePuzzleLogic";
+import { InputFile } from "@/components/common/InputFile";
+import { Switch } from "../ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
@@ -19,7 +19,7 @@ export default function PuzzleGame() {
     handleMouseUp,
     resetPuzzle,
     shufflePuzzle,
-  } = usePuzzleGameLogic(image);
+  } = usePuzzleLogic(image);
   const [debug, setDebug] = useState(false);
   const offscreenCanvas = useRef<HTMLCanvasElement | null>(null);
 
@@ -112,19 +112,7 @@ export default function PuzzleGame() {
       <canvas
         ref={canvasRef}
         style={{ width: "800px", height: "600px", userSelect: "none" }}
-        onMouseDown={(e) => {
-          for (let i = pieces.length - 1; i >= 0; i--) {
-            if (
-              pieces[i].isPointInside(
-                e.nativeEvent.offsetX,
-                e.nativeEvent.offsetY,
-              )
-            ) {
-              handleMouseDown(e);
-              break;
-            }
-          }
-        }}
+        onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
