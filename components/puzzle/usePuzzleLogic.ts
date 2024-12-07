@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { PuzzlePiece } from "./PuzzlePiece";
 import { Gap, HorizontalGapDirection, VerticalGapDirection } from "./types";
-import { COLUMNS, ROWS, SNAP_DISTANCE } from "./constants";
+import { COLUMNS, ROWS } from "./constants";
 import { initializePieces } from "./puzzleSetup";
 
 export function usePuzzleLogic(image: HTMLImageElement | null) {
@@ -131,7 +131,6 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
       selectedPiece.checkSnapping(
         piecesRef.current,
         COLUMNS,
-        SNAP_DISTANCE,
         leftSidePieces,
         rightSidePieces,
       );

@@ -5,6 +5,7 @@ import {
   areAligned,
   mergeGroups,
 } from "./PuzzleGroup";
+import { SNAP_DISTANCE } from "@/components/puzzle/constants";
 
 export class PuzzleSnapper {
   private readonly piece: PuzzlePiece;
@@ -16,7 +17,6 @@ export class PuzzleSnapper {
   checkSnapping(
     pieces: PuzzlePiece[],
     columns: number,
-    SNAP_DISTANCE: number,
     leftSidePieces: number[],
     rightSidePieces: number[],
   ) {
@@ -37,19 +37,17 @@ export class PuzzleSnapper {
       adjacentPieces.forEach((otherPiece) => {
         if (otherPiece === piece) return;
 
-        this.handleTopSnapping(piece, otherPiece, SNAP_DISTANCE, columns);
-        this.handleBottomSnapping(piece, otherPiece, SNAP_DISTANCE, columns);
+        this.handleTopSnapping(piece, otherPiece, columns);
+        this.handleBottomSnapping(piece, otherPiece, columns);
         this.handleLeftSnapping(
           piece,
           otherPiece,
-          SNAP_DISTANCE,
           leftSidePieces,
           rightSidePieces,
         );
         this.handleRightSnapping(
           piece,
           otherPiece,
-          SNAP_DISTANCE,
           leftSidePieces,
           rightSidePieces,
         );
@@ -60,7 +58,6 @@ export class PuzzleSnapper {
   private handleTopSnapping(
     piece: PuzzlePiece,
     otherPiece: PuzzlePiece,
-    SNAP_DISTANCE: number,
     columns: number,
   ) {
     const numberDifference = Math.abs(piece.number - otherPiece.number);
@@ -83,7 +80,6 @@ export class PuzzleSnapper {
   private handleBottomSnapping(
     piece: PuzzlePiece,
     otherPiece: PuzzlePiece,
-    SNAP_DISTANCE: number,
     columns: number,
   ) {
     const numberDifference = Math.abs(piece.number - otherPiece.number);
@@ -106,7 +102,6 @@ export class PuzzleSnapper {
   private handleLeftSnapping(
     piece: PuzzlePiece,
     otherPiece: PuzzlePiece,
-    SNAP_DISTANCE: number,
     leftSidePieces: number[],
     rightSidePieces: number[],
   ) {
@@ -133,7 +128,6 @@ export class PuzzleSnapper {
   private handleRightSnapping(
     piece: PuzzlePiece,
     otherPiece: PuzzlePiece,
-    SNAP_DISTANCE: number,
     leftSidePieces: number[],
     rightSidePieces: number[],
   ) {

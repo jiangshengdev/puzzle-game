@@ -69,14 +69,12 @@ export class PuzzlePiece {
   checkSnapping(
     pieces: PuzzlePiece[],
     columns: number,
-    SNAP_DISTANCE: number,
     leftSidePieces: number[],
     rightSidePieces: number[],
   ) {
     this.snapper.checkSnapping(
       pieces,
       columns,
-      SNAP_DISTANCE,
       leftSidePieces,
       rightSidePieces,
     );
