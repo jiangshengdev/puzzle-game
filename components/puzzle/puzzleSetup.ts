@@ -5,6 +5,7 @@ import {
   PuzzlePiece,
   VerticalGapDirection,
 } from "./PuzzlePiece";
+import React from "react";
 
 export function initializePieces(
   randomizePositions: boolean,

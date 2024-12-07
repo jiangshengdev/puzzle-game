@@ -171,7 +171,7 @@ export class PuzzlePiece {
         ) {
           if (areAligned(piece, otherPiece, "x")) {
             const offsetY = otherPiece.y + otherPiece.height;
-            this.snapTo(piece, otherPiece, 0, offsetY - piece.y);
+            this.snapTo(piece, 0, offsetY - piece.y);
             this.align(piece, otherPiece, "x");
             this.mergeWith(otherPiece);
           }
@@ -185,7 +185,7 @@ export class PuzzlePiece {
         ) {
           if (areAligned(piece, otherPiece, "x")) {
             const offsetY = otherPiece.y - piece.height;
-            this.snapTo(piece, otherPiece, 0, offsetY - piece.y);
+            this.snapTo(piece, 0, offsetY - piece.y);
             this.align(piece, otherPiece, "x");
             this.mergeWith(otherPiece);
           }
@@ -205,7 +205,7 @@ export class PuzzlePiece {
         ) {
           if (areAligned(piece, otherPiece, "y")) {
             const offsetX = otherPiece.x + otherPiece.width;
-            this.snapTo(piece, otherPiece, offsetX - piece.x, 0);
+            this.snapTo(piece, offsetX - piece.x, 0);
             this.align(piece, otherPiece, "y");
             this.mergeWith(otherPiece);
           }
@@ -224,7 +224,7 @@ export class PuzzlePiece {
         ) {
           if (areAligned(piece, otherPiece, "y")) {
             const offsetX = otherPiece.x - piece.width;
-            this.snapTo(piece, otherPiece, offsetX - piece.x, 0);
+            this.snapTo(piece, offsetX - piece.x, 0);
             this.align(piece, otherPiece, "y");
             this.mergeWith(otherPiece);
           }
@@ -233,12 +233,7 @@ export class PuzzlePiece {
     });
   }
 
-  snapTo(
-    piece: PuzzlePiece,
-    otherPiece: PuzzlePiece,
-    offsetX: number,
-    offsetY: number,
-  ) {
+  snapTo(piece: PuzzlePiece, offsetX: number, offsetY: number) {
     if (piece.group) {
       adjustGroupPosition(piece.group, offsetX, offsetY);
     } else {
