@@ -1,4 +1,9 @@
-import { isConvex } from "./utils";
+import {
+  adjustGroupPosition,
+  alignPosition,
+  areAligned,
+  mergeGroups,
+} from "./PuzzleGroup";
 
 export type HorizontalGapDirection = "leftConvex" | "rightConvex";
 export type VerticalGapDirection = "topConvex" | "bottomConvex";
@@ -131,6 +136,125 @@ export class PuzzlePiece {
     this.y = newY;
   }
 
+  checkSnapping(
+    pieces: PuzzlePiece[],
+    columns: number,
+    SNAP_DISTANCE: number,
+    leftSidePieces: number[],
+    rightSidePieces: number[],
+  ) {
+    const piecesToCheck = this.group ? this.group : [this];
+
+    piecesToCheck.forEach((piece) => {
+      const adjacentNumbers = [
+        piece.number - 1,
+        piece.number + 1,
+        piece.number - columns,
+        piece.number + columns,
+      ];
+
+      const adjacentPieces = pieces.filter((otherPiece) =>
+        adjacentNumbers.includes(otherPiece.number),
+      );
+
+      adjacentPieces.forEach((otherPiece) => {
+        if (otherPiece === piece) return;
+
+        const numberDifference = Math.abs(piece.number - otherPiece.number);
+
+        if (
+          Math.abs(piece.y - (otherPiece.y + otherPiece.height)) <
+            SNAP_DISTANCE &&
+          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
+          numberDifference === columns &&
+          piece.number > otherPiece.number
+        ) {
+          if (areAligned(piece, otherPiece, "x")) {
+            const offsetY = otherPiece.y + otherPiece.height;
+            this.snapTo(piece, otherPiece, 0, offsetY - piece.y);
+            this.align(piece, otherPiece, "x");
+            this.mergeWith(otherPiece);
+          }
+        }
+
+        if (
+          Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
+          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
+          numberDifference === columns &&
+          piece.number < otherPiece.number
+        ) {
+          if (areAligned(piece, otherPiece, "x")) {
+            const offsetY = otherPiece.y - piece.height;
+            this.snapTo(piece, otherPiece, 0, offsetY - piece.y);
+            this.align(piece, otherPiece, "x");
+            this.mergeWith(otherPiece);
+          }
+        }
+
+        if (
+          Math.abs(piece.x - (otherPiece.x + otherPiece.width)) <
+            SNAP_DISTANCE &&
+          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
+          piece.number === otherPiece.number + 1 &&
+          !(
+            (rightSidePieces.includes(otherPiece.number) &&
+              leftSidePieces.includes(piece.number)) ||
+            (rightSidePieces.includes(piece.number) &&
+              leftSidePieces.includes(otherPiece.number))
+          )
+        ) {
+          if (areAligned(piece, otherPiece, "y")) {
+            const offsetX = otherPiece.x + otherPiece.width;
+            this.snapTo(piece, otherPiece, offsetX - piece.x, 0);
+            this.align(piece, otherPiece, "y");
+            this.mergeWith(otherPiece);
+          }
+        }
+
+        if (
+          Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
+          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
+          piece.number === otherPiece.number - 1 &&
+          !(
+            (rightSidePieces.includes(otherPiece.number) &&
+              leftSidePieces.includes(piece.number)) ||
+            (rightSidePieces.includes(piece.number) &&
+              leftSidePieces.includes(otherPiece.number))
+          )
+        ) {
+          if (areAligned(piece, otherPiece, "y")) {
+            const offsetX = otherPiece.x - piece.width;
+            this.snapTo(piece, otherPiece, offsetX - piece.x, 0);
+            this.align(piece, otherPiece, "y");
+            this.mergeWith(otherPiece);
+          }
+        }
+      });
+    });
+  }
+
+  snapTo(
+    piece: PuzzlePiece,
+    otherPiece: PuzzlePiece,
+    offsetX: number,
+    offsetY: number,
+  ) {
+    if (piece.group) {
+      adjustGroupPosition(piece.group, offsetX, offsetY);
+    } else {
+      piece.x += offsetX;
+      piece.y += offsetY;
+    }
+  }
+
+  mergeWith(otherPiece: PuzzlePiece) {
+    mergeGroups(this, otherPiece);
+  }
+
+  align(piece: PuzzlePiece, otherPiece: PuzzlePiece, axis: "x" | "y") {
+    alignPosition(piece, otherPiece, axis);
+  }
+
   private createPath(path: Path2D) {
     this.drawSide(path, "top");
     this.drawSide(path, "right");
@@ -142,7 +266,7 @@ export class PuzzlePiece {
   private drawSide(path: Path2D, side: "top" | "right" | "bottom" | "left") {
     const gap = this.gaps[side];
     if (gap) {
-      const convex = isConvex(side, gap);
+      const convex = this.isConvex(side, gap);
       let midX, midY;
       const r =
         side === "top" || side === "bottom" ? this.width / 6 : this.height / 6;
@@ -224,5 +348,10 @@ export class PuzzlePiece {
           break;
       }
     }
+  }
+
+  private isConvex(direction: keyof Gaps, gap: GapDirection | null): boolean {
+    if (!gap) return false;
+    return gap.includes(direction);
   }
 }

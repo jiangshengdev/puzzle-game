@@ -7,18 +7,12 @@ import React, {
 } from "react";
 import {
   Gap,
-  Gaps,
   HorizontalGapDirection,
   PuzzlePiece,
   VerticalGapDirection,
 } from "./PuzzlePiece";
-import {
-  adjustGroupPosition,
-  alignPosition,
-  areAligned,
-  mergeGroups,
-  SNAP_DISTANCE,
-} from "./utils";
+import { SNAP_DISTANCE } from "./utils";
+import { initializePieces } from "./puzzleSetup";
 
 export function usePuzzleGameLogic(image: HTMLImageElement | null) {
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
@@ -52,229 +46,34 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
     [rows, columns],
   );
 
-  const initializePieces = useCallback(
+  const initialize = useCallback(
     (randomizePositions: boolean) => {
-      if (!image) return;
-
-      const initialPieces: PuzzlePiece[] = [];
-      const canvasWidth = 800;
-      const canvasHeight = 600;
-      const spacingX = canvasWidth / (columns + 1);
-      const spacingY = canvasHeight / (rows + 1);
-
-      const centerX = image.width / 2;
-      const centerY = image.height / 2;
-
-      const gridAspectRatio = columns / rows;
-      const imageAspectRatio = image.width / image.height;
-
-      let cropWidth: number;
-      let cropHeight: number;
-
-      if (imageAspectRatio > gridAspectRatio) {
-        cropHeight = image.height;
-        cropWidth = cropHeight * gridAspectRatio;
-      } else {
-        cropWidth = image.width;
-        cropHeight = cropWidth / gridAspectRatio;
-      }
-
-      const startX = centerX - cropWidth / 2;
-      const startY = centerY - cropHeight / 2;
-
-      const pieceWidth = cropWidth / columns;
-      const pieceHeight = cropHeight / rows;
-
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < columns; col++) {
-          const number = row * columns + col + 1;
-
-          const gaps: Gaps = {
-            top:
-              row > 0
-                ? (verticalGaps[col][row - 1]
-                    ?.direction as VerticalGapDirection)
-                : null,
-            bottom:
-              row < rows - 1
-                ? (verticalGaps[col][row]?.direction as VerticalGapDirection)
-                : null,
-            left:
-              col > 0
-                ? (horizontalGaps[row][col - 1]
-                    ?.direction as HorizontalGapDirection)
-                : null,
-            right:
-              col < columns - 1
-                ? (horizontalGaps[row][col]
-                    ?.direction as HorizontalGapDirection)
-                : null,
-          };
-
-          const piece = new PuzzlePiece(
-            spacingX * (col + 1) - 50,
-            spacingY * (row + 1) - 50,
-            100,
-            100,
-            number,
-            image,
-            startX + col * pieceWidth,
-            startY + row * pieceHeight,
-            pieceWidth,
-            pieceHeight,
-            gaps,
-          );
-
-          if (randomizePositions) {
-            piece.x = Math.random() * (canvasWidth - piece.width);
-            piece.y = Math.random() * (canvasHeight - piece.height);
-          } else {
-            piece.x = spacingX * (col + 1) - 50;
-            piece.y = spacingY * (row + 1) - 50;
-          }
-
-          initialPieces.push(piece);
-        }
-      }
-
-      const lefts = initialPieces
-        .filter((piece) => (piece.number - 1) % columns === 0)
-        .map((piece) => piece.number);
-
-      const rights = initialPieces
-        .filter((piece) => piece.number % columns === 0)
-        .map((piece) => piece.number);
-
-      setLeftSidePieces(lefts);
-      setRightSidePieces(rights);
-
-      initialPieces.forEach((piece) => {
-        piece.group = null;
-      });
-
-      setPieces(initialPieces);
-      piecesRef.current = initialPieces;
+      initializePieces(
+        randomizePositions,
+        image,
+        horizontalGaps,
+        verticalGaps,
+        rows,
+        columns,
+        setLeftSidePieces,
+        setRightSidePieces,
+        setPieces,
+        piecesRef,
+      );
     },
     [image, horizontalGaps, verticalGaps],
   );
 
   useEffect(() => {
-    initializePieces(false);
-  }, [image, initializePieces]);
+    initialize(false);
+  }, [image, initialize]);
 
   function resetPuzzle() {
-    initializePieces(false);
+    initialize(false);
   }
 
   function shufflePuzzle() {
-    initializePieces(true);
-  }
-
-  function checkSnapping(movedPiece: PuzzlePiece) {
-    const piecesToCheck = movedPiece.group ? movedPiece.group : [movedPiece];
-
-    piecesToCheck.forEach((piece) => {
-      const adjacentNumbers = [
-        piece.number - 1,
-        piece.number + 1,
-        piece.number - columns,
-        piece.number + columns,
-      ];
-
-      const adjacentPieces = piecesRef.current.filter((otherPiece) =>
-        adjacentNumbers.includes(otherPiece.number),
-      );
-
-      adjacentPieces.forEach((otherPiece) => {
-        if (otherPiece === piece) return;
-
-        const numberDifference = Math.abs(piece.number - otherPiece.number);
-
-        if (
-          Math.abs(piece.y - (otherPiece.y + otherPiece.height)) <
-            SNAP_DISTANCE &&
-          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-          numberDifference === columns &&
-          piece.number > otherPiece.number
-        ) {
-          if (areAligned(piece, otherPiece, "x")) {
-            const offsetY = otherPiece.y + otherPiece.height;
-            if (piece.group) {
-              adjustGroupPosition(piece.group, 0, offsetY - piece.y);
-            } else {
-              piece.y = offsetY;
-            }
-            alignPosition(piece, otherPiece, "x");
-            mergeGroups(piece, otherPiece);
-          }
-        }
-
-        if (
-          Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
-          Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
-          numberDifference === columns &&
-          piece.number < otherPiece.number
-        ) {
-          if (areAligned(piece, otherPiece, "x")) {
-            const offsetY = otherPiece.y - piece.height;
-            if (piece.group) {
-              adjustGroupPosition(piece.group, 0, offsetY - piece.y);
-            } else {
-              piece.y = offsetY;
-            }
-            alignPosition(piece, otherPiece, "x");
-            mergeGroups(piece, otherPiece);
-          }
-        }
-
-        if (
-          Math.abs(piece.x - (otherPiece.x + otherPiece.width)) <
-            SNAP_DISTANCE &&
-          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
-          piece.number === otherPiece.number + 1 &&
-          !(
-            (rightSidePieces.includes(otherPiece.number) &&
-              leftSidePieces.includes(piece.number)) ||
-            (rightSidePieces.includes(piece.number) &&
-              leftSidePieces.includes(otherPiece.number))
-          )
-        ) {
-          if (areAligned(piece, otherPiece, "y")) {
-            const offsetX = otherPiece.x + otherPiece.width;
-            if (piece.group) {
-              adjustGroupPosition(piece.group, offsetX - piece.x, 0);
-            } else {
-              piece.x = offsetX;
-            }
-            alignPosition(piece, otherPiece, "y");
-            mergeGroups(piece, otherPiece);
-          }
-        }
-
-        if (
-          Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
-          Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
-          piece.number === otherPiece.number - 1 &&
-          !(
-            (rightSidePieces.includes(otherPiece.number) &&
-              leftSidePieces.includes(piece.number)) ||
-            (rightSidePieces.includes(piece.number) &&
-              leftSidePieces.includes(otherPiece.number))
-          )
-        ) {
-          if (areAligned(piece, otherPiece, "y")) {
-            const offsetX = otherPiece.x - piece.width;
-            if (piece.group) {
-              adjustGroupPosition(piece.group, offsetX - piece.x, 0);
-            } else {
-              piece.x = offsetX;
-            }
-            alignPosition(piece, otherPiece, "y");
-            mergeGroups(piece, otherPiece);
-          }
-        }
-      });
-    });
+    initialize(true);
   }
 
   function handleMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
@@ -336,7 +135,13 @@ export function usePuzzleGameLogic(image: HTMLImageElement | null) {
 
   function handleMouseUp() {
     if (dragging && selectedPiece) {
-      checkSnapping(selectedPiece);
+      selectedPiece.checkSnapping(
+        piecesRef.current,
+        columns,
+        SNAP_DISTANCE,
+        leftSidePieces,
+        rightSidePieces,
+      );
 
       if (selectedPiece.group) {
         selectedPiece.group.forEach((piece) => {
