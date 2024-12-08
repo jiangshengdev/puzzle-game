@@ -205,7 +205,7 @@ export function usePuzzleLogic(
       piecesRef.current = newPieces;
       return newPieces;
     });
-  }, [canvasSize]);
+  }, [canvasSize.width, canvasSize.height]);
 
   useEffect(() => {
     ensureGroupsInside();

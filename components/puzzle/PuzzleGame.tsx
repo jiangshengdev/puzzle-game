@@ -12,7 +12,10 @@ export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameIdRef = useRef<number>(0);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const [canvasSize, setCanvasSize] = useState(getCanvasDimensions());
+  const [canvasSize, setCanvasSize] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 800, height: 600 });
 
   const {
     pieces,
@@ -46,6 +49,8 @@ export default function PuzzleGame() {
   }
 
   useEffect(() => {
+    setCanvasSize(getCanvasDimensions());
+    ensureGroupsInside();
     const updateSize = () => {
       setCanvasSize(getCanvasDimensions());
       ensureGroupsInside();
