@@ -22,6 +22,8 @@ export function usePuzzleLogic(
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const piecesRef = useRef<PuzzlePiece[]>([]);
   const [puzzleComplete, setPuzzleComplete] = useState(false);
+  const [piecesStacked, setPiecesStacked] = useState<boolean>(false);
+  const stackPosition = useMemo(() => ({ x: 50, y: 50 }), []);
 
   const horizontalGaps: Gap[][] = useMemo(
     () =>
@@ -72,11 +74,56 @@ export function usePuzzleLogic(
   }
 
   function shufflePuzzle() {
-    initialize(true);
+    initialize(false);
+    setPieces((currentPieces) => {
+      const newPieces = currentPieces.map((piece) => {
+        piece.x = stackPosition.x;
+        piece.y = stackPosition.y;
+        return piece;
+      });
+      piecesRef.current = newPieces;
+      return newPieces;
+    });
+    setPiecesStacked(true);
     setPuzzleComplete(false);
   }
 
+  function drawPieceFromStack() {
+    if (piecesStacked) {
+      setPieces((currentPieces) => {
+        const piece = currentPieces.find(
+          (p) => p.x === stackPosition.x && p.y === stackPosition.y,
+        );
+        if (piece) {
+          piece.x = Math.random() * (canvasSize.width - piece.width);
+          piece.y = Math.random() * (canvasSize.height - piece.height);
+        }
+        return [...currentPieces];
+      });
+      piecesRef.current = pieces;
+    }
+  }
+
+  function scatterPieces() {
+    if (piecesStacked) {
+      setPieces((currentPieces) => {
+        const newPieces = currentPieces.map((piece) => {
+          piece.x = Math.random() * (canvasSize.width - piece.width);
+          piece.y = Math.random() * (canvasSize.height - piece.height);
+          return piece;
+        });
+        piecesRef.current = newPieces;
+        return newPieces;
+      });
+      setPiecesStacked(false);
+    }
+  }
+
   function handleMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
+    if (piecesStacked) {
+      drawPieceFromStack();
+      return;
+    }
     const canvas = e.currentTarget;
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -223,6 +270,8 @@ export function usePuzzleLogic(
     handleMouseUp,
     resetPuzzle,
     shufflePuzzle,
+    scatterPieces,
+    piecesStacked,
     puzzleComplete,
     ensureGroupsInside,
   };

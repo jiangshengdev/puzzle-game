@@ -27,6 +27,8 @@ export default function PuzzleGame() {
     resetPuzzle,
     shufflePuzzle,
     ensureGroupsInside,
+    piecesStacked,
+    scatterPieces,
   } = usePuzzleLogic(image, canvasSize);
 
   const [debug, setDebug] = useState(false);
@@ -142,6 +144,7 @@ export default function PuzzleGame() {
           </div>
           <Button onClick={resetPuzzle}>重置</Button>
           <Button onClick={shufflePuzzle}>打乱</Button>
+          {piecesStacked && <Button onClick={scatterPieces}>散开拼图</Button>}
         </div>
       </div>
       <canvas
