@@ -7,7 +7,7 @@ export class PuzzlePiece {
   y: number;
   width: number;
   height: number;
-  group: PuzzlePiece[] | null;
+  group: PuzzlePiece[];
   number: number;
   zIndex: number;
   image: HTMLImageElement | null;
@@ -39,7 +39,7 @@ export class PuzzlePiece {
     this.y = y;
     this.width = width;
     this.height = height;
-    this.group = null;
+    this.group = [];
     this.number = number;
     this.zIndex = number;
     this.image = image;
@@ -175,7 +175,7 @@ export class PuzzlePiece {
     }
   }
 
-  private createPaths() {
+  createPaths() {
     this.drawPath = new Path2D();
     this.drawPath.moveTo(this.x, this.y);
     this.drawTopSide(this.drawPath);

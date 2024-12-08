@@ -10,7 +10,10 @@ import { Gap, HorizontalGapDirection, VerticalGapDirection } from "./types";
 import { COLUMNS, ROWS } from "./constants";
 import { initializePieces } from "./puzzleSetup";
 
-export function usePuzzleLogic(image: HTMLImageElement | null) {
+export function usePuzzleLogic(
+  image: HTMLImageElement | null,
+  canvasSize: { width: number; height: number },
+) {
   const [pieces, setPieces] = useState<PuzzlePiece[]>([]);
   const [leftSidePieces, setLeftSidePieces] = useState<number[]>([]);
   const [rightSidePieces, setRightSidePieces] = useState<number[]>([]);
@@ -60,6 +63,7 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
 
   useEffect(() => {
     initialize(false);
+    setPuzzleComplete(false);
   }, [image, initialize]);
 
   function resetPuzzle() {
@@ -175,6 +179,38 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
     }
   }
 
+  const ensureGroupsInside = useCallback(() => {
+    setPieces((currentPieces) => {
+      const newPieces = currentPieces.map((piece) => {
+        if (piece.group) {
+          const group = piece.group;
+          const isOutside = group.every(
+            (p) =>
+              p.x + p.width < 0 ||
+              p.x > canvasSize.width ||
+              p.y + p.height < 0 ||
+              p.y > canvasSize.height,
+          );
+          if (isOutside) {
+            const randomX = Math.random() * (canvasSize.width - piece.width);
+            const randomY = Math.random() * (canvasSize.height - piece.height);
+            group.forEach((p) => {
+              p.x = randomX;
+              p.y = randomY;
+            });
+          }
+        }
+        return piece;
+      });
+      piecesRef.current = newPieces;
+      return newPieces;
+    });
+  }, [canvasSize.width, canvasSize.height]);
+
+  useEffect(() => {
+    ensureGroupsInside();
+  }, [canvasSize, ensureGroupsInside]);
+
   return {
     pieces,
     leftSidePieces,
@@ -188,5 +224,6 @@ export function usePuzzleLogic(image: HTMLImageElement | null) {
     resetPuzzle,
     shufflePuzzle,
     puzzleComplete,
+    ensureGroupsInside,
   };
 }
