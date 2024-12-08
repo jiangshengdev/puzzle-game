@@ -80,6 +80,7 @@ export class PuzzlePiece {
    * @returns 如果点在拼图块内，则返回true，否则返回false。
    */
   isPointInside(px: number, py: number) {
+    // 创建一个临时画布上下文用于路径检测
     const ctx = document.createElement("canvas").getContext("2d")!;
     return ctx.isPointInPath(this.clickPath, px, py);
   }
@@ -92,7 +93,9 @@ export class PuzzlePiece {
    * @param puzzleComplete - 拼图是否完成。
    */
   draw(ctx: CanvasRenderingContext2D, debug: boolean, puzzleComplete: boolean) {
+    // 创建绘制路径和点击路径
     this.createPaths();
+    // 使用PuzzleDrawer绘制拼图块
     this.drawer.draw(ctx, debug, puzzleComplete);
   }
 
@@ -121,6 +124,7 @@ export class PuzzlePiece {
     leftSidePieces: number[],
     rightSidePieces: number[],
   ) {
+    // 使用PuzzleSnapper处理自动对齐逻辑
     this.snapper.checkSnapping(
       pieces,
       columns,
@@ -137,11 +141,13 @@ export class PuzzlePiece {
   drawTopSide(path: Path2D) {
     const gap = this.gaps["top"];
     if (gap) {
+      // 判断顶部间隙是否为凸形
       const convex = this.isConvex("top", gap);
       const r = this.width / 6;
       const midX = this.x + this.width / 2;
       path.lineTo(midX - r, this.y);
       path.lineTo(this.x + this.width / 3, this.y);
+      // 根据间隙形状绘制弧线
       path.arc(
         midX,
         convex ? this.y - r : this.y + r,
@@ -153,6 +159,7 @@ export class PuzzlePiece {
       path.lineTo(this.x + (2 * this.width) / 3, this.y);
       path.lineTo(this.x + this.width, this.y);
     } else {
+      // 如果没有间隙，直接绘制直线
       path.lineTo(this.x + this.width, this.y);
     }
   }
@@ -165,11 +172,13 @@ export class PuzzlePiece {
   drawRightSide(path: Path2D) {
     const gap = this.gaps["right"];
     if (gap) {
+      // 判断右侧间隙是否为凸形
       const convex = this.isConvex("right", gap);
       const r = this.height / 6;
       const midY = this.y + this.height / 2;
       path.lineTo(this.x + this.width, this.y);
       path.lineTo(this.x + this.width, midY - r);
+      // 根据间隙形状绘制弧线
       path.arc(
         convex ? this.x + this.width + r : this.x + this.width - r,
         midY,
@@ -181,6 +190,7 @@ export class PuzzlePiece {
       path.lineTo(this.x + this.width, midY + r);
       path.lineTo(this.x + this.width, this.y + this.height);
     } else {
+      // 如果没有间隙，直接绘制直线
       path.lineTo(this.x + this.width, this.y + this.height);
     }
   }
@@ -193,11 +203,13 @@ export class PuzzlePiece {
   drawBottomSide(path: Path2D) {
     const gap = this.gaps["bottom"];
     if (gap) {
+      // 判断底部间隙是否为凸形
       const convex = this.isConvex("bottom", gap);
       const r = this.width / 6;
       const midX = this.x + this.width / 2;
       path.lineTo(this.x + this.width, this.y + this.height);
       path.lineTo(this.x + (2 * this.width) / 3, this.y + this.height);
+      // 根据间隙形状绘制弧线
       path.arc(
         midX,
         convex ? this.y + this.height + r : this.y + this.height - r,
@@ -209,6 +221,7 @@ export class PuzzlePiece {
       path.lineTo(this.x + this.width / 3, this.y + this.height);
       path.lineTo(this.x, this.y + this.height);
     } else {
+      // 如果没有间隙，直接绘制直线
       path.lineTo(this.x, this.y + this.height);
     }
   }
@@ -221,11 +234,13 @@ export class PuzzlePiece {
   drawLeftSide(path: Path2D) {
     const gap = this.gaps["left"];
     if (gap) {
+      // 判断左侧间隙是否为凸形
       const convex = this.isConvex("left", gap);
       const r = this.height / 6;
       const midY = this.y + this.height / 2;
       path.lineTo(this.x, this.y + this.height);
       path.lineTo(this.x, this.y + (2 * this.height) / 3);
+      // 根据间隙形状绘制弧线
       path.arc(
         convex ? this.x - r : this.x + r,
         midY,
@@ -237,6 +252,7 @@ export class PuzzlePiece {
       path.lineTo(this.x, this.y + this.height / 3);
       path.lineTo(this.x, this.y);
     } else {
+      // 如果没有间隙，直接绘制直线
       path.lineTo(this.x, this.y);
     }
   }
@@ -245,6 +261,7 @@ export class PuzzlePiece {
    * 创建拼图块的绘制路径和点击路径。
    */
   createPaths() {
+    // 初始化绘制路径
     this.drawPath = new Path2D();
     this.drawPath.moveTo(this.x, this.y);
     this.drawTopSide(this.drawPath);
@@ -253,6 +270,7 @@ export class PuzzlePiece {
     this.drawLeftSide(this.drawPath);
     this.drawPath.closePath();
 
+    // 初始化点击路径
     this.clickPath = new Path2D();
     this.clickPath.moveTo(this.x, this.y);
     this.drawTopSide(this.clickPath);

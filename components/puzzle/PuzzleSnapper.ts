@@ -36,9 +36,11 @@ export class PuzzleSnapper {
     leftSidePieces: number[],
     rightSidePieces: number[],
   ) {
+    // 获取需要检查的拼图块组
     const piecesToCheck = this.piece.group ? this.piece.group : [this.piece];
 
     piecesToCheck.forEach((piece) => {
+      // 计算当前拼图块的相邻编号
       const adjacentNumbers = [
         piece.number - 1,
         piece.number + 1,
@@ -46,6 +48,7 @@ export class PuzzleSnapper {
         piece.number + columns,
       ];
 
+      // 找出相邻的拼图块
       const adjacentPieces = pieces.filter((otherPiece) =>
         adjacentNumbers.includes(otherPiece.number),
       );
@@ -53,6 +56,7 @@ export class PuzzleSnapper {
       adjacentPieces.forEach((otherPiece) => {
         if (otherPiece === piece) return;
 
+        // 处理各方向的对齐
         this.handleTopSnapping(piece, otherPiece, columns);
         this.handleBottomSnapping(piece, otherPiece, columns);
         this.handleLeftSnapping(
@@ -83,18 +87,25 @@ export class PuzzleSnapper {
     otherPiece: PuzzlePiece,
     columns: number,
   ) {
+    // 计算两个拼图块编号的差值
     const numberDifference = Math.abs(piece.number - otherPiece.number);
 
+    // 检查是否满足顶部对齐的条件
     if (
       Math.abs(piece.y - (otherPiece.y + otherPiece.height)) < SNAP_DISTANCE &&
       Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
       numberDifference === columns &&
       piece.number > otherPiece.number
     ) {
+      // 检查是否在X轴上对齐
       if (areAligned(piece, otherPiece, "x")) {
+        // 计算Y轴的偏移量
         const offsetY = otherPiece.y + otherPiece.height;
+        // 将拼图块对齐到指定位置
         this.snapTo(piece, 0, offsetY - piece.y);
+        // 对齐拼图块的位置
         this.align(piece, otherPiece, "x");
+        // 合并拼图块组
         this.mergeWith(otherPiece);
       }
     }
@@ -112,18 +123,25 @@ export class PuzzleSnapper {
     otherPiece: PuzzlePiece,
     columns: number,
   ) {
+    // 计算两个拼图块编号的差值
     const numberDifference = Math.abs(piece.number - otherPiece.number);
 
+    // 检查是否满足底部对齐的条件
     if (
       Math.abs(piece.y + piece.height - otherPiece.y) < SNAP_DISTANCE &&
       Math.abs(piece.x - otherPiece.x) < SNAP_DISTANCE &&
       numberDifference === columns &&
       piece.number < otherPiece.number
     ) {
+      // 检查是否在X轴上对齐
       if (areAligned(piece, otherPiece, "x")) {
+        // 计算Y轴的偏移量
         const offsetY = otherPiece.y - piece.height;
+        // 将拼图块对齐到指定位置
         this.snapTo(piece, 0, offsetY - piece.y);
+        // 对齐拼图块的位置
         this.align(piece, otherPiece, "x");
+        // 合并拼图块组
         this.mergeWith(otherPiece);
       }
     }
@@ -143,6 +161,7 @@ export class PuzzleSnapper {
     leftSidePieces: number[],
     rightSidePieces: number[],
   ) {
+    // 检查是否满足左侧对齐的条件
     if (
       Math.abs(piece.x - (otherPiece.x + otherPiece.width)) < SNAP_DISTANCE &&
       Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
@@ -154,10 +173,15 @@ export class PuzzleSnapper {
           leftSidePieces.includes(otherPiece.number))
       )
     ) {
+      // 检查是否在Y轴上对齐
       if (areAligned(piece, otherPiece, "y")) {
+        // 计算X轴的偏移量
         const offsetX = otherPiece.x + otherPiece.width;
+        // 将拼图块对齐到指定位置
         this.snapTo(piece, offsetX - piece.x, 0);
+        // 对齐拼图块的位置
         this.align(piece, otherPiece, "y");
+        // 合并拼图块组
         this.mergeWith(otherPiece);
       }
     }
@@ -177,6 +201,7 @@ export class PuzzleSnapper {
     leftSidePieces: number[],
     rightSidePieces: number[],
   ) {
+    // 检查是否满足右侧对齐的条件
     if (
       Math.abs(piece.x + piece.width - otherPiece.x) < SNAP_DISTANCE &&
       Math.abs(piece.y - otherPiece.y) < SNAP_DISTANCE &&
@@ -188,10 +213,15 @@ export class PuzzleSnapper {
           leftSidePieces.includes(otherPiece.number))
       )
     ) {
+      // 检查是否在Y轴上对齐
       if (areAligned(piece, otherPiece, "y")) {
+        // 计算X轴的偏移量
         const offsetX = otherPiece.x - piece.width;
+        // 将拼图块对齐到指定位置
         this.snapTo(piece, offsetX - piece.x, 0);
+        // 对齐拼图块的位置
         this.align(piece, otherPiece, "y");
+        // 合并拼图块组
         this.mergeWith(otherPiece);
       }
     }
@@ -205,9 +235,11 @@ export class PuzzleSnapper {
    * @param offsetY - Y轴的偏移量。
    */
   private snapTo(piece: PuzzlePiece, offsetX: number, offsetY: number) {
+    // 调整整个组的位置
     if (piece.group) {
       adjustGroupPosition(piece.group, offsetX, offsetY);
     } else {
+      // 单独调整拼图块的位置
       piece.x += offsetX;
       piece.y += offsetY;
     }
@@ -219,6 +251,7 @@ export class PuzzleSnapper {
    * @param otherPiece - 需要合并的另一个拼图块。
    */
   private mergeWith(otherPiece: PuzzlePiece) {
+    // 将两个拼图块的组进行合并
     mergeGroups(this.piece, otherPiece);
   }
 
@@ -230,6 +263,7 @@ export class PuzzleSnapper {
    * @param axis - 对齐的轴，"x" 或 "y"。
    */
   private align(piece: PuzzlePiece, otherPiece: PuzzlePiece, axis: "x" | "y") {
+    // 对齐拼图块的位置
     alignPosition(piece, otherPiece, axis);
   }
 }

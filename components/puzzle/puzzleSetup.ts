@@ -21,11 +21,14 @@ function calculateCropDimensions(
   rows: number,
   columns: number,
 ): { cropWidth: number; cropHeight: number } {
+  // 计算网格的纵横比
   const gridAspectRatio = columns / rows;
+  // 计算图像的纵横比
   const imageAspectRatio = image.width / image.height;
   let cropWidth: number;
   let cropHeight: number;
 
+  // 根据图像和网格的纵横比决定裁剪宽度和高度
   if (imageAspectRatio > gridAspectRatio) {
     cropHeight = image.height;
     cropWidth = cropHeight * gridAspectRatio;
@@ -66,8 +69,10 @@ function createPuzzlePiece(
   horizontalGaps: Gap[][],
   verticalGaps: Gap[][],
 ): PuzzlePiece {
+  // 计算拼图块的编号
   const number = row * columns + col + 1;
 
+  // 根据位置获取各边的间隙信息
   const gaps: Gaps = {
     top:
       row > 0
@@ -87,6 +92,7 @@ function createPuzzlePiece(
         : null,
   };
 
+  // 创建并返回新的拼图块实例
   return new PuzzlePiece(
     0,
     0,
@@ -128,31 +134,41 @@ export function initializePieces(
   setPieces: React.Dispatch<React.SetStateAction<PuzzlePiece[]>>,
   piecesRef: React.MutableRefObject<PuzzlePiece[]>,
 ) {
+  // 如果没有图像，则不进行初始化
   if (!image) return;
 
+  // 获取画布的宽度和高度
   const { width: canvasWidth, height: canvasHeight } = getCanvasDimensions();
 
+  // 初始化拼图块数组
   const initialPieces: PuzzlePiece[] = [];
+  // 计算水平和垂直方向的间距
   const spacingX = canvasWidth / (columns + 1);
   const spacingY = canvasHeight / (rows + 1);
 
+  // 计算图像的中心坐标
   const centerX = image.width / 2;
   const centerY = image.height / 2;
 
+  // 计算裁剪后的宽度和高度
   const { cropWidth, cropHeight } = calculateCropDimensions(
     image,
     rows,
     columns,
   );
 
+  // 计算裁剪的起始坐标
   const startX = centerX - cropWidth / 2;
   const startY = centerY - cropHeight / 2;
 
+  // 计算每个拼图块的宽度和高度
   const pieceWidth = cropWidth / columns;
   const pieceHeight = cropHeight / rows;
 
+  // 遍历每一行和每一列创建拼图块
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < columns; col++) {
+      // 创建拼图块
       const piece = createPuzzlePiece(
         row,
         col,
@@ -167,33 +183,43 @@ export function initializePieces(
         verticalGaps,
       );
 
+      // 如果需要随机化位置，则设置随机坐标
       if (randomizePositions) {
         piece.x = Math.random() * (canvasWidth - piece.width);
         piece.y = Math.random() * (canvasHeight - piece.height);
       } else {
+        // 否则，按照网格间距设置初始坐标
         piece.x = spacingX * (col + 1) - 50;
         piece.y = spacingY * (row + 1) - 50;
       }
 
+      // 将拼图块添加到初始数组中
       initialPieces.push(piece);
     }
   }
 
+  // 获取左侧边缘的拼图块编号
   const lefts = initialPieces
     .filter((piece) => (piece.number - 1) % columns === 0)
     .map((piece) => piece.number);
 
+  // 获取右侧边缘的拼图块编号
   const rights = initialPieces
     .filter((piece) => piece.number % columns === 0)
     .map((piece) => piece.number);
 
+  // 更新左侧边缘拼图块的状态
   setLeftSidePieces(lefts);
+  // 更新右侧边缘拼图块的状态
   setRightSidePieces(rights);
 
+  // 为每个拼图块设置其所属的组
   initialPieces.forEach((piece) => {
     piece.group = [piece];
   });
 
+  // 更新拼图块数组的状态
   setPieces(initialPieces);
+  // 更新引用中的拼图块数组
   piecesRef.current = initialPieces;
 }
