@@ -1,13 +1,28 @@
 import { PuzzlePiece } from "./PuzzlePiece";
 
+/**
+ * 类用于绘制拼图块及其组。
+ */
 export class PuzzleDrawer {
   static drawnGroups: Set<PuzzlePiece[]> = new Set();
   private piece: PuzzlePiece;
 
+  /**
+   * 创建一个PuzzleDrawer实例。
+   *
+   * @param piece - 需要绘制的拼图块。
+   */
   constructor(piece: PuzzlePiece) {
     this.piece = piece;
   }
 
+  /**
+   * 在画布上绘制拼图块。
+   *
+   * @param ctx - CanvasRenderingContext2D对象，用于绘制。
+   * @param debug - 是否开启调试模式。
+   * @param puzzleComplete - 拼图是否完成。
+   */
   draw(ctx: CanvasRenderingContext2D, debug: boolean, puzzleComplete: boolean) {
     const group = this.piece.group;
     if (group && !PuzzleDrawer.drawnGroups.has(group)) {
@@ -103,6 +118,11 @@ export class PuzzleDrawer {
     }
   }
 
+  /**
+   * 创建拼图块的路径。
+   *
+   * @param path - Path2D对象，用于定义路径。
+   */
   private createPath(path: Path2D) {
     this.piece.drawTopSide(path);
     this.piece.drawRightSide(path);

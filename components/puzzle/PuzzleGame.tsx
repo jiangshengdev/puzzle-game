@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 import { getCanvasDimensions } from "./constants";
 import { PuzzleDrawer } from "./PuzzleDrawer";
 
+/**
+ * 拼图游戏组件，负责渲染画布和控制面板，处理用户交互。
+ *
+ * @returns 渲染的拼图游戏界面。
+ */
 export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameIdRef = useRef<number>(0);
@@ -38,6 +43,11 @@ export default function PuzzleGame() {
 
   const offscreenCtx = useRef<CanvasRenderingContext2D | null>(null);
 
+  /**
+   * 处理图像上传事件，加载用户上传的图像作为拼图素材。
+   *
+   * @param e - 输入文件的变化事件。
+   */
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
       const img = new Image();
@@ -78,6 +88,9 @@ export default function PuzzleGame() {
     }
   }, []);
 
+  /**
+   * 绘制所有拼图块到画布上。
+   */
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
