@@ -5,13 +5,15 @@ import { InputFile } from "@/components/common/InputFile";
 import { Switch } from "../ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
+import { getCanvasDimensions } from "./constants";
 import { PuzzleDrawer } from "./PuzzleDrawer";
 
 export default function PuzzleGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameIdRef = useRef<number>(0);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const [canvasSize, setCanvasSize] = useState(getCanvasDimensions());
+
   const {
     pieces,
     dragging,
@@ -21,7 +23,9 @@ export default function PuzzleGame() {
     handleMouseUp,
     resetPuzzle,
     shufflePuzzle,
-  } = usePuzzleLogic(image);
+    ensureGroupsInside,
+  } = usePuzzleLogic(image, canvasSize);
+
   const [debug, setDebug] = useState(false);
   const offscreenCanvas = useRef<HTMLCanvasElement | null>(null);
 
@@ -42,6 +46,15 @@ export default function PuzzleGame() {
   }
 
   useEffect(() => {
+    const updateSize = () => {
+      setCanvasSize(getCanvasDimensions());
+      ensureGroupsInside();
+    };
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, [ensureGroupsInside]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -49,10 +62,10 @@ export default function PuzzleGame() {
     if (!ctx) return;
 
     const ratio = window.devicePixelRatio || 1;
-    canvas.width = CANVAS_WIDTH * ratio;
-    canvas.height = CANVAS_HEIGHT * ratio;
+    canvas.width = canvasSize.width * ratio;
+    canvas.height = canvasSize.height * ratio;
     ctx.scale(ratio, ratio);
-  }, []);
+  }, [canvasSize]);
 
   useEffect(() => {
     if (offscreenCanvas.current) {
@@ -101,21 +114,36 @@ export default function PuzzleGame() {
   }, [debug, draw]);
 
   return (
-    <div>
-      <div className="flex items-center space-x-4">
-        <InputFile onChange={handleImageUpload} />
-        <div className="flex items-center space-x-2">
-          <Switch id="debug-mode" checked={debug} onCheckedChange={setDebug} />
-          <Label htmlFor="debug-mode">调试模式</Label>
+    <div style={{ position: "relative" }}>
+      <div
+        className="floating-ui"
+        style={{
+          position: "absolute",
+          top: 20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+        }}
+      >
+        <div className="flex items-center space-x-4">
+          <InputFile onChange={handleImageUpload} />
+          <div className="flex items-center space-x-2 whitespace-nowrap">
+            <Switch
+              id="debug-mode"
+              checked={debug}
+              onCheckedChange={setDebug}
+            />
+            <Label htmlFor="debug-mode">调试模式</Label>
+          </div>
+          <Button onClick={resetPuzzle}>重置</Button>
+          <Button onClick={shufflePuzzle}>打乱</Button>
         </div>
-        <Button onClick={resetPuzzle}>重置</Button>
-        <Button onClick={shufflePuzzle}>打乱</Button>
       </div>
       <canvas
         ref={canvasRef}
         style={{
-          width: `${CANVAS_WIDTH}px`,
-          height: `${CANVAS_HEIGHT}px`,
+          width: `${canvasSize.width}px`,
+          height: `${canvasSize.height}px`,
           userSelect: "none",
         }}
         onMouseDown={handleMouseDown}
